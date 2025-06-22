@@ -13,18 +13,18 @@ export default async function Nav() {
     <div className="sticky top-0 inset-x-0 z-50 group">
       <header className="relative h-16 mx-auto border-b duration-200 bg-white border-ui-border-base">
         <nav className="content-container txt-xsmall-plus text-ui-fg-subtle flex items-center justify-between w-full h-full text-small-regular">
-          {/* Левый край: Medusa Store */}
+          {/* Левый край: Torgash Store */}
           <div className="flex-1 basis-0 h-full flex items-center">
             <LocalizedClientLink
               href="/"
               className="txt-compact-xlarge-plus hover:text-ui-fg-base uppercase"
               data-testid="nav-store-link"
             >
-              Torgash  Store
+              Torgash Store
             </LocalizedClientLink>
           </div>
 
-          {/* Правый край: SideMenu, Search, Account, Cart */}
+          {/* Правый край: SideMenu, Search, Cart */}
           <div className="flex items-center gap-x-6 h-full flex-1 basis-0 justify-end">
             <div className="flex items-center gap-x-6 h-full">
               <div className="h-full">
@@ -40,13 +40,6 @@ export default async function Nav() {
                   Search
                 </LocalizedClientLink>
               )}
-              {/* <LocalizedClientLink
-                className="hover:text-ui-fg-base"
-                href="/account"
-                data-testid="nav-account-link"
-              >
-                Account
-              </LocalizedClientLink> */}
             </div>
             <Suspense
               fallback={
