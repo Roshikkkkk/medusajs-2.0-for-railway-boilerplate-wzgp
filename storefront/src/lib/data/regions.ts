@@ -17,32 +17,30 @@ export const retrieveRegion = cache(async function (id: string) {
     .catch(medusaError)
 })
 
-const regionMap = new Map<string, HttpTypes.StoreRegion>()
-
 export const getRegion = cache(async function (countryCode: string) {
   try {
-    if (regionMap.has(countryCode)) {
-      return regionMap.get(countryCode)
-    }
-
     const regions = await listRegions()
-
     if (!regions) {
       return null
     }
 
-    regions.forEach((region) => {
-      region.countries?.forEach((c) => {
-        regionMap.set(c?.iso_2 ?? "", region)
+    let region: HttpTypes.StoreRegion | undefined;
+    regions.forEach((r) => {
+      r.countries?.forEach((c) => {
+        if (c.iso_2 === countryCode) {
+          region = r;
+        }
       })
-    })
+    });
 
-    const region = countryCode
-      ? regionMap.get(countryCode)
-      : regionMap.get("us")
+    if (!region) {
+      region = regions.find((r) => r.countries?.some((c) => c.iso_2 === "us")) || regions[0];
+    }
 
-    return region
+    console.log("Region for", countryCode, ":", region); // Отладка
+    return region;
   } catch (e: any) {
-    return null
+    console.error("Error fetching region:", e);
+    return null;
   }
 })
