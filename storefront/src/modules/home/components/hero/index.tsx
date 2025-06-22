@@ -1,6 +1,7 @@
 import { Github } from "@medusajs/icons"
 import { Button, Heading } from "@medusajs/ui"
 import { listCategories } from "@lib/data/categories"
+import { clx } from "@medusajs/ui"
 
 const Hero = async () => {
   // Запрашиваем категории
@@ -14,18 +15,29 @@ const Hero = async () => {
           <div className="h-full">
             {/* Дерево категорий */}
             {categories && categories.length > 0 ? (
-              <ul className="text-base">
+              <ul className="grid grid-cols-1 gap-2 text-base text-gray-800">
                 {categories.map((category) => (
-                  <li key={category.id} className="py-1">
-                    <a href={`/category/${category.handle}`} className="hover:text-ui-fg-base">
+                  <li key={category.id} className="flex flex-col gap-2">
+                    <a
+                      href={`/category/${category.handle}`}
+                      className={clx(
+                        "hover:bg-gray-100 hover:shadow-sm transition-all duration-200 rounded-md px-2 py-1",
+                        category.category_children?.length > 0 && "text-lg font-medium"
+                      )}
+                      data-testid="category-link"
+                    >
                       {category.name}
                     </a>
                     {/* Дочерние категории, если есть */}
                     {category.category_children && category.category_children.length > 0 && (
-                      <ul className="ml-4">
+                      <ul className="grid grid-cols-1 gap-2 ml-3">
                         {category.category_children.map((child) => (
-                          <li key={child.id} className="py-1">
-                            <a href={`/category/${child.handle}`} className="hover:text-ui-fg-base">
+                          <li key={child.id}>
+                            <a
+                              href={`/category/${child.handle}`}
+                              className="text-base hover:bg-gray-100 hover:shadow-sm transition-all duration-200 rounded-md px-2 py-1"
+                              data-testid="category-link"
+                            >
                               {child.name}
                             </a>
                           </li>
@@ -36,7 +48,7 @@ const Hero = async () => {
                 ))}
               </ul>
             ) : (
-              <p className="text-base text-ui-fg-subtle">No categories found</p>
+              <p className="text-base text-gray-800">No categories found</p>
             )}
           </div>
         </aside>
