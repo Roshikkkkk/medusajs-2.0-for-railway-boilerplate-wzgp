@@ -31,7 +31,7 @@ const SliderIndicators: React.FC<SliderIndicatorsProps> = ({ banners, centeredIn
   };
 
   return (
-    <div className="flex justify-center items-center h-8 pb-4 max-md:block md:hidden">
+    <div className="flex justify-center items-center h-8 pb-2 max-md:block md:hidden">
       <div className="relative flex justify-center items-center">
         <div
           className={clx(
@@ -55,44 +55,41 @@ const SliderIndicators: React.FC<SliderIndicatorsProps> = ({ banners, centeredIn
           href={`/${currentCountryCode}/banners`}
           onClick={handleClick}
           className={clx(
-            "h-10 bg-black text-white rounded-full text-sm font-medium hover:bg-gray-800 transition-all duration-300 inline-flex items-center justify-center px-4",
-            isLoading ? "w-[180px]" : "w-[120px]",
+            "h-10 px-6 bg-[#007AFF] text-white rounded-full text-sm font-medium",
+            "hover:bg-[#0051CC] transition-all duration-300 inline-flex items-center justify-center",
+            "focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2",
+            isLoading ? "opacity-75 cursor-not-allowed w-[180px]" : "w-[150px] hover:shadow-md",
             centeredIndex === banners.length - 1
               ? "opacity-100 scale-100"
               : "opacity-0 scale-95 pointer-events-none"
           )}
+          aria-label="Усі колекції"
         >
-          <span className="whitespace-nowrap">Усі колекції</span>
+          <span className="whitespace-nowrap">{isLoading ? "Зачекайте" : "Усі колекції"}</span>
           {isLoading && (
-            <div className="w-6 h-6 relative ml-2">
-              {Array.from({ length: 12 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="absolute w-[2px] h-1 bg-gray-300 rounded-[1px]"
-                  style={{
-                    top: "50%",
-                    left: "50%",
-                    transform: `rotate(${i * 30}deg) translateY(-8px)`,
-                    opacity: 0.25 + (i / 12) * 0.75,
-                    animation: `ios-spinner 1s linear infinite`,
-                    animationDelay: `${(i * -0.0833).toFixed(3)}s`,
-                  }}
-                />
-              ))}
-            </div>
+            <svg
+              className="ml-2 w-5 h-5 animate-spin"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+              ></path>
+            </svg>
           )}
         </LocalizedClientLink>
       </div>
-      <style jsx>{`
-        @keyframes ios-spinner {
-          0% {
-            opacity: 1;
-          }
-          100% {
-            opacity: 0.25;
-          }
-        }
-      `}</style>
     </div>
   );
 };
