@@ -4,8 +4,9 @@ import MobileGrid from "@modules/home/components/mobile-grid";
 import DesktopGrid from "@modules/home/components/desktop-grid";
 import { listCategories } from "@lib/data/categories";
 import { clx } from "@medusajs/ui";
+import { HttpTypes } from "@medusajs/types";
 
-const Hero = async () => {
+const Hero = async ({ collections }: { collections: HttpTypes.StoreCollection[] | null }) => {
   const categories = await listCategories();
 
   return (
@@ -55,7 +56,7 @@ const Hero = async () => {
         <div className="w-full lg:w-[85%] flex flex-col">
           <Suspense fallback={<div>Loading...</div>}>
             <HeroSlider />
-            <MobileGrid className="md:hidden" />
+            <MobileGrid className="md:hidden" collections={collections} />
             <DesktopGrid className="hidden md:block" />
           </Suspense>
         </div>
