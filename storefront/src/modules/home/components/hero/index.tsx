@@ -29,7 +29,7 @@ const Hero = async () => {
                     </a>
                     {category.category_children &&
                       category.category_children.length > 0 && (
-                        <ul className="grid grid-cols-1 gap-1 ml-1.5">
+                        <ul className="grid grid-cols-1 gap-1">
                           {category.category_children.map((child) => (
                             <li key={child.id}>
                               <a
