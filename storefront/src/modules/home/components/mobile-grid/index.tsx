@@ -22,6 +22,7 @@ export default function MobileGrid({ className, collections }: MobileGridProps) 
   const buttonsRef = useRef<Record<string, HTMLButtonElement | null>>({});
   const [underlineStyle, setUnderlineStyle] = useState<{ left: number; width: number } | null>(null);
   const pointerStart = useRef<{ x: number; y: number } | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const collectionTitles = useMemo(() => {
     return collections
@@ -122,6 +123,22 @@ export default function MobileGrid({ className, collections }: MobileGridProps) 
     }, 500);
   };
 
+  const toggleModal = () => {
+    setIsModalOpen(!isModalOpen);
+  };
+
+  // Блокируем скролл страницы, когда модалка открыта
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [isModalOpen]);
+
   return (
     <div
       className={clx(
@@ -129,47 +146,60 @@ export default function MobileGrid({ className, collections }: MobileGridProps) 
         className
       )}
     >
-      <div
-        ref={containerRef}
-        className="relative flex overflow-x-auto no-scrollbar px-4 py-2"
-        style={{ userSelect: "none" }}
-        role="tablist"
-      >
-        {collectionTitles.length > 0 ? (
-          collectionTitles.map((col) => (
-            <button
-              key={col.id}
-              ref={(el) => (buttonsRef.current[col.id] = el)}
-              onPointerDown={handlePointerDown}
-              onPointerUp={(e) => handlePointerUp(e, col.id)}
-              onKeyDown={(e) => handleKeyDown(e, col.id)}
-              className={clx(
-                "flex-shrink-0 px-4 py-2 text-sm font-medium whitespace-nowrap cursor-pointer transition-all duration-300 rounded-md",
-                activeCategory === col.id
-                  ? "text-[#007AFF] font-semibold bg-blue-50"
-                  : "text-gray-500"
-              )}
-              type="button"
-              role="tab"
-              aria-selected={activeCategory === col.id}
-              tabIndex={activeCategory === col.id ? 0 : -1}
-            >
-              {col.title}
-            </button>
-          ))
-        ) : (
-          <span className="text-sm text-gray-500 px-4 py-2">No collections found</span>
-        )}
-        {underlineStyle && (
-          <div
-            className="absolute bottom-0 h-[3px] bg-[#007AFF] rounded-full transition-all duration-300 ease-in-out"
-            style={{
-              left: underlineStyle.left,
-              width: underlineStyle.width,
-            }}
-          />
-        )}
+      <div className="px-4 py-8">
+        <button
+          onClick={toggleModal}
+          className={clx(
+            "w-full h-14 flex items-center justify-between px-4 bg-gray-100 text-gray-900 rounded-md text-base font-medium",
+            "transition-all duration-300"
+          )}
+          aria-label="Каталог товарів"
+          type="button"
+        >
+          <div className="flex items-center">
+            <img src="/icons/categories.svg" alt="Categories" className="w-5 h-5 mr-2" />
+            <span>Каталог товарів</span>
+          </div>
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
       </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="bg-white w-full h-full">
+            <div className="flex justify-between items-center p-4 border-b border-gray-200">
+              <h2 className="text-lg font-semibold">Каталог товарів</h2>
+              <button onClick={toggleModal} className="text-gray-600">
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div className="p-4 overflow-y-auto" style={{ maxHeight: "calc(100vh - 64px)" }}>
+              {/* Пустая модалка, как ты просил */}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div
         className="grid grid-cols-2 w-full overflow-hidden transition-all duration-500 border-t border-gray-200"
