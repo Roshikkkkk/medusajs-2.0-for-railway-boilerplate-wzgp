@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { clx } from "@medusajs/ui";
 import MobileCard from "../mobile-card";
 import { HttpTypes } from "@medusajs/types";
+import MobileModal from "../mobile-modal";
 
 type MobileGridProps = {
   className?: string;
@@ -15,105 +16,9 @@ const gridItems = Array.from({ length: 12 }, (_, i) => ({
 }));
 
 export default function MobileGrid({ className, collections }: MobileGridProps) {
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(6);
   const [isLoading, setIsLoading] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const buttonsRef = useRef<Record<string, HTMLButtonElement | null>>({});
-  const [underlineStyle, setUnderlineStyle] = useState<{ left: number; width: number } | null>(null);
-  const pointerStart = useRef<{ x: number; y: number } | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const collectionTitles = useMemo(() => {
-    return collections
-      ? collections.map((col) => ({
-          id: col.id,
-          title: col.title || "Untitled",
-        }))
-      : [];
-  }, [collections]);
-
-  useEffect(() => {
-    if (collectionTitles.length > 0) {
-      setActiveCategory(collectionTitles[0].id);
-    }
-  }, [collectionTitles]);
-
-  const updateUnderline = () => {
-    if (!activeCategory || !containerRef.current) return;
-    const btn = buttonsRef.current[activeCategory];
-    if (!btn) return;
-
-    const containerRect = containerRef.current.getBoundingClientRect();
-    const btnRect = btn.getBoundingClientRect();
-
-    setUnderlineStyle({
-      left: btnRect.left - containerRect.left + containerRef.current.scrollLeft,
-      width: btnRect.width,
-    });
-  };
-
-  const scrollToCenterButton = () => {
-    if (!activeCategory || !containerRef.current) return;
-    const btn = buttonsRef.current[activeCategory];
-    if (!btn) return;
-
-    const container = containerRef.current;
-    const btnRect = btn.getBoundingClientRect();
-    const containerRect = container.getBoundingClientRect();
-
-    const btnCenter = btnRect.left + btnRect.width / 2;
-    const containerCenter = containerRect.width / 2;
-    const scrollLeft = btnCenter - containerCenter + container.scrollLeft - btnRect.width / 2;
-
-    container.scrollTo({
-      left: scrollLeft,
-      behavior: "smooth",
-    });
-  };
-
-  useEffect(() => {
-    updateUnderline();
-    scrollToCenterButton();
-  }, [activeCategory]);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    const handler = () => updateUnderline();
-
-    container.addEventListener("scroll", handler);
-    window.addEventListener("resize", handler);
-
-    return () => {
-      container.removeEventListener("scroll", handler);
-      window.removeEventListener("resize", handler);
-    };
-  }, [activeCategory]);
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>, id: string) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      setActiveCategory(id);
-    }
-  };
-
-  const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
-    pointerStart.current = { x: e.clientX, y: e.clientY };
-  };
-
-  const handlePointerUp = (e: React.PointerEvent<HTMLButtonElement>, id: string) => {
-    if (pointerStart.current) {
-      const distanceX = Math.abs(e.clientX - pointerStart.current.x);
-      const distanceY = Math.abs(e.clientY - pointerStart.current.y);
-
-      if (distanceX < 10 && distanceY < 10) {
-        setActiveCategory(id);
-      }
-    }
-    pointerStart.current = null;
-  };
 
   const handleShowMore = () => {
     setIsLoading(true);
@@ -127,7 +32,7 @@ export default function MobileGrid({ className, collections }: MobileGridProps) 
     setIsModalOpen(!isModalOpen);
   };
 
-  // Блокируем скролл страницы, когда модалка открыта
+  // Блокировка скролла страницы
   useEffect(() => {
     if (isModalOpen) {
       document.body.style.overflow = "hidden";
@@ -172,34 +77,7 @@ export default function MobileGrid({ className, collections }: MobileGridProps) 
         </button>
       </div>
 
-      {isModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
-          <div className="bg-white w-full h-full">
-            <div className="flex justify-between items-center p-4 border-b border-gray-200">
-              <h2 className="text-lg font-semibold">Каталог товарів</h2>
-              <button onClick={toggleModal} className="text-gray-600">
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-            <div className="p-4 overflow-y-auto" style={{ maxHeight: "calc(100vh - 64px)" }}>
-              {/* Пустая модалка, как ты просил */}
-            </div>
-          </div>
-        </div>
-      )}
+      <MobileModal isOpen={isModalOpen} onClose={toggleModal} />
 
       <div
         className="grid grid-cols-2 w-full overflow-hidden transition-all duration-500 border-t border-gray-200"
