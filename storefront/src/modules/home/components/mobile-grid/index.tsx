@@ -47,35 +47,61 @@ export default function MobileGrid({ className, collections }: MobileGridProps) 
   return (
     <div
       className={clx(
-        "w-full pt-0 pb-4 bg-white border-t border-gray-200 mt-4",
+        "w-full pt-0 pb-4 bg-white border-t border-gray-200 mt-4 relative",
         className
       )}
     >
-      <div className="px-4 py-8">
-        <button
-          onClick={toggleModal}
-          className={clx(
-            "w-full h-14 flex items-center justify-between px-4 bg-gray-100 text-gray-900 rounded-md text-base font-medium",
-            "transition-all duration-300"
-          )}
-          aria-label="Каталог товарів"
-          type="button"
-        >
-          <div className="flex items-center">
-            <img src="/icons/categories.svg" alt="Categories" className="w-5 h-5 mr-2" />
-            <span>Каталог товарів</span>
-          </div>
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
+      <div className="px-4 py-4">
+        <div className="flex justify-between items-center">
+          <button
+            onClick={toggleModal}
+            className={clx(
+              "flex items-center justify-center px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-md text-sm font-medium",
+              "transition-all duration-300 w-[180px] shadow-sm hover:shadow-md whitespace-nowrap"
+            )}
+            aria-label="Каталог товарів"
+            type="button"
           >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
+            <img
+              src="/icons/categories.svg"
+              alt="Categories"
+              className="w-6 h-6 mr-2"
+              onError={() => console.error("Failed to load categories.svg")}
+            />
+            <span>Каталог товарів</span>
+            <svg
+              className="w-5 h-5 ml-2"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <button
+            className={clx(
+              "flex items-center justify-center px-4 py-2.5 bg-gray-100 text-gray-900 rounded-md text-sm font-medium",
+              "transition-all duration-300 w-[180px] shadow-sm cursor-not-allowed"
+            )}
+            aria-label="Пошук"
+            type="button"
+            disabled
+          >
+            <img
+              src="  /icons/search.svg"
+              alt="Search"
+              className="w-6 h-6 mr-2"
+              onError={() => console.error("Failed to load search.svg")}
+            />
+            <span>Пошук</span>
+          </button>
+        </div>
       </div>
+      <div
+        className="absolute left-1/2 top-0 bottom-0 w-px bg-gray-200"
+        style={{ transform: "translateX(-50%)" }}
+      ></div>
 
       <MobileModal isOpen={isModalOpen} onClose={toggleModal} />
 
