@@ -5,16 +5,9 @@ type CacheFunction = <T extends (...args: any[]) => Promise<any>>(fn: T) => T;
 const typedCache = cache as CacheFunction;
 
 export const listCategories = typedCache(async function () {
-  console.log("listCategories called, backend URL:", process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL);
-  try {
-    const { product_categories } = await sdk.store.category
-      .list({ fields: "+category_children" }, { next: { tags: ["categories"] } });
-    console.log("Categories received:", product_categories);
-    return product_categories || [];
-  } catch (error) {
-    console.error("Error in listCategories:", error.message);
-    throw new Error(error.message || "Failed to fetch categories");
-  }
+  return sdk.store.category
+    .list({ fields: "+category_children" }, { next: { tags: ["categories"] } })
+    .then(({ product_categories }) => product_categories)
 })
 
 export const getCategoriesList = typedCache(async function (

@@ -5,20 +5,70 @@ import { clx } from "@medusajs/ui";
 import MobileCard from "../mobile-card";
 import { HttpTypes } from "@medusajs/types";
 import MobileModal from "../mobile-modal";
+import { getCollectionByHandle } from "@lib/data/collections";
+import { getProductsById, getProductsList } from "@lib/data/products";
+import { getRegion } from "@lib/data/regions";
 
 type MobileGridProps = {
   className?: string;
   collections: HttpTypes.StoreCollection[] | null;
+  countryCode: string;
 };
 
-const gridItems = Array.from({ length: 12 }, (_, i) => ({
-  id: `grid-item-${i + 1}`,
-}));
-
-export default function MobileGrid({ className, collections }: MobileGridProps) {
+export default function MobileGrid({ className, collections, countryCode }: MobileGridProps) {
   const [visibleCount, setVisibleCount] = useState(6);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [products, setProducts] = useState<HttpTypes.StoreProduct[]>([]);
+  const [region, setRegion] = useState<HttpTypes.StoreRegion | null>(null);
+
+  useEffect(() => {
+    async function fetchPopularProducts() {
+      try {
+        setIsLoading(true);
+        const collection = await getCollectionByHandle("popular");
+        if (!collection?.id) {
+          console.error("Collection 'popular' not found");
+          return;
+        }
+        console.log("Collection:", collection); // Отладка
+
+        const regionData = await getRegion(countryCode);
+        if (!regionData?.id) {
+          console.error("Region not found for countryCode:", countryCode);
+          return;
+        }
+        console.log("Region:", regionData); // Отладка
+        setRegion(regionData);
+
+        const { response } = await getProductsList({
+          queryParams: { collection_id: [collection.id], limit: 12 },
+          countryCode,
+        });
+        console.log("Products response:", response); // Отладка
+
+        // Запрашиваем товары с ценами через getProductsById
+        const productIds = response.products.map((p) => p.id!).filter(Boolean);
+        if (productIds.length > 0) {
+          const pricedProducts = await getProductsById({
+            ids: productIds,
+            regionId: regionData.id,
+          });
+          console.log("Priced products:", pricedProducts); // Отладка
+          setProducts(pricedProducts);
+        } else {
+          console.log("No product IDs found");
+          setProducts([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch popular products:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    fetchPopularProducts();
+  }, [countryCode]);
 
   const handleShowMore = () => {
     setIsLoading(true);
@@ -109,20 +159,20 @@ export default function MobileGrid({ className, collections }: MobileGridProps) 
         className="grid grid-cols-2 w-full overflow-hidden transition-all duration-500 border-t border-gray-200"
         style={{ maxHeight: visibleCount === 6 ? "900px" : "1800px" }}
       >
-        {gridItems.slice(0, visibleCount).map((item, index) => (
+        {products.slice(0, visibleCount).map((product, index) => (
           <div
-            key={item.id}
+            key={product.id}
             className={clx(
               "transition-opacity duration-500",
               index >= 6 && visibleCount === 6 ? "opacity-0" : "opacity-100"
             )}
           >
-            <MobileCard index={index} />
+            <MobileCard index={index} product={product} region={region} />
           </div>
         ))}
       </div>
 
-      {visibleCount < gridItems.length && (
+      {visibleCount < products.length && (
         <div className="mt-4 flex justify-center">
           <button
             onClick={handleShowMore}

@@ -1,11 +1,20 @@
 import { clx } from "@medusajs/ui";
+import { HttpTypes } from "@medusajs/types";
+import { getProductPrice } from "@lib/util/get-product-price";
 
 type MobileCardProps = {
   index: number;
+  product: HttpTypes.StoreProduct;
+  region: HttpTypes.StoreRegion | null;
 };
 
-const MobileCard = ({ index }: MobileCardProps) => {
-  const productName = "Product Name Very Long Title Here";
+const MobileCard = ({ index, product, region }: MobileCardProps) => {
+  const productName = product.title || "Без назви";
+  console.log("Product:", product); // Отладка
+  const { cheapestPrice } = getProductPrice({ product, region });
+  console.log("Cheapest price:", cheapestPrice); // Отладка
+  const price = cheapestPrice?.calculated_price || "Ціна не вказана";
+  const thumbnail = product.thumbnail || "/images/placeholder.jpg";
 
   return (
     <div
@@ -16,8 +25,8 @@ const MobileCard = ({ index }: MobileCardProps) => {
     >
       <div className="relative w-full h-[225px]">
         <img
-          src="/images/banner3.jpg"
-          alt="Product"
+          src={thumbnail}
+          alt={productName}
           className="absolute w-full h-full object-cover object-top"
         />
         <div className="absolute top-2 right-2">
@@ -41,7 +50,7 @@ const MobileCard = ({ index }: MobileCardProps) => {
         >
           {productName}
         </span>
-        <span className="text-sm text-gray-600">$99.99</span>
+        <span className="text-sm text-gray-600">{price}</span>
       </div>
     </div>
   );
