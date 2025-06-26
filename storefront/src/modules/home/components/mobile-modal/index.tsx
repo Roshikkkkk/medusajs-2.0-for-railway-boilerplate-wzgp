@@ -6,12 +6,23 @@ import { listCategories } from "@lib/data/categories";
 const MobileModal = ({ isOpen, onClose }) => {
   const [categories, setCategories] = useState([]);
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
+      console.log("MobileModal opened, fetching categories...");
+      setIsLoading(true);
       listCategories()
-        .then((data) => setCategories(data || []))
-        .catch((err) => setError("Помилка: " + (err.message || "Невідомо")));
+        .then((data) => {
+          console.log("Categories set:", data);
+          setCategories(data || []);
+          setError(null);
+        })
+        .catch((err) => {
+          console.error("Error in MobileModal:", err.message);
+          setError("Помилка: " + (err.message || "Невідомо"));
+        })
+        .finally(() => setIsLoading(false));
     }
   }, [isOpen]);
 
@@ -40,18 +51,20 @@ const MobileModal = ({ isOpen, onClose }) => {
           </button>
         </div>
         <div className="p-4 overflow-y-auto" style={{ maxHeight: "calc(100vh - 64px)" }}>
-          {error ? (
+          {isLoading ? (
+            <p>Завантаження...</p>
+          ) : error ? (
             <p className="text-red-500">{error}</p>
           ) : categories.length > 0 ? (
             <ul>
               {categories.map((cat) => (
-                <li key={cat.id} className="py-1">
-                  {cat.name || "Без назви"}
+                <li key={cat.id || Math.random()} className="py-1">
+                  <a href={`/category/${cat.handle}`}>{cat.name || "Без назви"}</a>
                 </li>
               ))}
             </ul>
           ) : (
-            <p>Завантаження...</p>
+            <p>Немає категорій</p>
           )}
         </div>
       </div>

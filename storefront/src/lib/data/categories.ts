@@ -1,14 +1,20 @@
 import { sdk } from "@lib/config"
 import { cache } from "react"
 
-// Явно указываем тип для cache, чтобы убрать ошибку TypeScript
 type CacheFunction = <T extends (...args: any[]) => Promise<any>>(fn: T) => T;
 const typedCache = cache as CacheFunction;
 
 export const listCategories = typedCache(async function () {
-  return sdk.store.category
-    .list({ fields: "+category_children" }, { next: { tags: ["categories"] } })
-    .then(({ product_categories }) => product_categories)
+  console.log("listCategories called, backend URL:", process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL);
+  try {
+    const { product_categories } = await sdk.store.category
+      .list({ fields: "+category_children" }, { next: { tags: ["categories"] } });
+    console.log("Categories received:", product_categories);
+    return product_categories || [];
+  } catch (error) {
+    console.error("Error in listCategories:", error.message);
+    throw new Error(error.message || "Failed to fetch categories");
+  }
 })
 
 export const getCategoriesList = typedCache(async function (
@@ -16,8 +22,6 @@ export const getCategoriesList = typedCache(async function (
   limit: number = 100
 ) {
   return sdk.store.category.list(
-    // TODO: Look into fixing the type
-    // @ts-ignore
     { limit, offset },
     { next: { tags: ["categories"] } }
   )
@@ -27,8 +31,6 @@ export const getCategoryByHandle = typedCache(async function (
   categoryHandle: string[]
 ) {
   return sdk.store.category.list(
-    // TODO: Look into fixing the type
-    // @ts-ignore
     { handle: categoryHandle },
     { next: { tags: ["categories"] } }
   )
