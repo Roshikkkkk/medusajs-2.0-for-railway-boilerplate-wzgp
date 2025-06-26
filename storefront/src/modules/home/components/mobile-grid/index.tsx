@@ -47,12 +47,12 @@ export default function MobileGrid({ className, collections }: MobileGridProps) 
   return (
     <div
       className={clx(
-        "w-full pt-0 pb-4 bg-white border-t border-gray-200 mt-4 relative",
+        "w-full pt-0 pb-4 bg-white border-t border-gray-200 mt-4",
         className
       )}
     >
       <div className="px-4 py-4">
-        <div className="flex justify-between items-center">
+        <div className="flex justify-between items-center relative">
           <button
             onClick={toggleModal}
             className={clx(
@@ -65,7 +65,7 @@ export default function MobileGrid({ className, collections }: MobileGridProps) 
             <img
               src="/icons/categories.svg"
               alt="Categories"
-              className="w-6 h-6 mr-2"
+              className="w-5 h-5 mr-2"
               onError={() => console.error("Failed to load categories.svg")}
             />
             <span>Каталог товарів</span>
@@ -89,19 +89,19 @@ export default function MobileGrid({ className, collections }: MobileGridProps) 
             disabled
           >
             <img
-              src="  /icons/search.svg"
+              src="/icons/search.svg"
               alt="Search"
-              className="w-6 h-6 mr-2"
+              className="w-5 h-5 mr-2"
               onError={() => console.error("Failed to load search.svg")}
             />
             <span>Пошук</span>
           </button>
+          <div
+            className="absolute left-1/2 top-0 bottom-0 w-px bg-gray-200"
+            style={{ transform: "translateX(-50%)" }}
+          ></div>
         </div>
       </div>
-      <div
-        className="absolute left-1/2 top-0 bottom-0 w-px bg-gray-200"
-        style={{ transform: "translateX(-50%)" }}
-      ></div>
 
       <MobileModal isOpen={isModalOpen} onClose={toggleModal} />
 
