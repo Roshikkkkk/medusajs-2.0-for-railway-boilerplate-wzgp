@@ -9,6 +9,13 @@ import { getCollectionByHandle } from "@lib/data/collections";
 import { getProductsById, getProductsList } from "@lib/data/products";
 import { getRegion } from "@lib/data/regions";
 
+// Определяем тип для queryParams, если он не определён в библиотеке
+interface ProductListQueryParams {
+  collection_id?: string[];
+  limit?: number;
+  // Другие возможные параметры можно добавить
+}
+
 type MobileGridProps = {
   className?: string;
   collections: HttpTypes.StoreCollection[] | null;
@@ -42,7 +49,7 @@ export default function MobileGrid({ className, collections, countryCode }: Mobi
         setRegion(regionData);
 
         const { response } = await getProductsList({
-          queryParams: { collection_id: [collection.id], limit: 12 },
+          queryParams: { collection_id: [collection.id], limit: 12 } as ProductListQueryParams, // Уточнённый тип
           countryCode,
         });
         console.log("Products response:", response); // Отладка
@@ -213,4 +220,4 @@ export default function MobileGrid({ className, collections, countryCode }: Mobi
       )}
     </div>
   );
-} // Добавлен закрывающий фигурный скобок для функции
+}

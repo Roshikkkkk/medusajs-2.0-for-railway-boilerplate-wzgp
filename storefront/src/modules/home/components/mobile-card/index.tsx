@@ -3,22 +3,29 @@ import { HttpTypes } from "@medusajs/types";
 import { getProductPrice } from "@lib/util/get-product-price";
 import LocalizedClientLink from "@modules/common/components/localized-client-link";
 
+// Определяем тип параметров для getProductPrice, если он не определён
+interface GetProductPriceParams {
+  product: HttpTypes.StoreProduct;
+  region?: HttpTypes.StoreRegion | null | undefined; // Допускаем null и undefined
+}
+
 type MobileCardProps = {
   index: number;
   product: HttpTypes.StoreProduct;
   region: HttpTypes.StoreRegion | null;
+  countryCode: string;
 };
 
-const MobileCard = ({ index, product, region }: MobileCardProps) => {
+const MobileCard = ({ index, product, region, countryCode }: MobileCardProps) => {
   const productName = product.title || "Без назви";
   console.log("Product:", product); // Отладка
-  const { cheapestPrice } = getProductPrice({ product, region });
+  const { cheapestPrice } = getProductPrice({ product, region } as GetProductPriceParams); // Утверждение типа
   console.log("Cheapest price:", cheapestPrice); // Отладка
   const price = cheapestPrice?.calculated_price || "Ціна не вказана";
   const thumbnail = product.thumbnail || "/images/placeholder.jpg";
 
   return (
-    <LocalizedClientLink href={`/products/${product.handle}?countryCode=${region?.countries?.[0]?.iso_2 || "us"}`} className="block">
+    <LocalizedClientLink href={`/products/${product.handle}?countryCode=${countryCode}`} className="block">
       <div
         className={clx(
           "w-full h-[300px] bg-white border-b border-gray-200 flex flex-col transition-all duration-300",
