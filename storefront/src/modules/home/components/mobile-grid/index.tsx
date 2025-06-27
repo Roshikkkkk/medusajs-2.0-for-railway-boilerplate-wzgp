@@ -167,7 +167,7 @@ export default function MobileGrid({ className, collections, countryCode }: Mobi
               index >= 6 && visibleCount === 6 ? "opacity-0" : "opacity-100"
             )}
           >
-            <MobileCard index={index} product={product} region={region} />
+            <MobileCard index={index} product={product} region={region} countryCode={countryCode} />
           </div>
         ))}
       </div>
@@ -213,4 +213,4 @@ export default function MobileGrid({ className, collections, countryCode }: Mobi
       )}
     </div>
   );
-}
+} // Добавлен закрывающий фигурный скобок для функции
