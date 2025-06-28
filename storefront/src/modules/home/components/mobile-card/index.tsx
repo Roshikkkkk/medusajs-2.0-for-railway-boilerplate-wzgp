@@ -2,11 +2,11 @@ import { clx } from "@medusajs/ui";
 import { HttpTypes } from "@medusajs/types";
 import { getProductPrice } from "@lib/util/get-product-price";
 import LocalizedClientLink from "@modules/common/components/localized-client-link";
-import { useState } from "react";
 
+// Определяем тип параметров для getProductPrice, если он не определён
 interface GetProductPriceParams {
   product: HttpTypes.StoreProduct;
-  region?: HttpTypes.StoreRegion | null | undefined;
+  region?: HttpTypes.StoreRegion | null | undefined; // Допускаем null и undefined
 }
 
 type MobileCardProps = {
@@ -18,24 +18,14 @@ type MobileCardProps = {
 
 const MobileCard = ({ index, product, region, countryCode }: MobileCardProps) => {
   const productName = product.title || "Без назви";
-  const { cheapestPrice } = getProductPrice({ product, region } as GetProductPriceParams);
+  console.log("Product:", product); // Отладка
+  const { cheapestPrice } = getProductPrice({ product, region } as GetProductPriceParams); // Утверждение типа
+  console.log("Cheapest price:", cheapestPrice); // Отладка
   const price = cheapestPrice?.calculated_price || "Ціна не вказана";
   const thumbnail = product.thumbnail || "/images/placeholder.jpg";
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleClick = (e: React.MouseEvent) => {
-    setIsLoading(true);
-    // Эмуляция задержки загрузки (можно убрать, если есть точное событие навигации)
-    setTimeout(() => setIsLoading(false), 300);
-  };
 
   return (
-    <LocalizedClientLink
-      href={`/products/${product.handle}?countryCode=${countryCode}`}
-      className="block relative"
-      onClick={handleClick}
-      onTouchStart={handleClick} // Для мобильных
-    >
+    <LocalizedClientLink href={`/products/${product.handle}?countryCode=${countryCode}`} className="block">
       <div
         className={clx(
           "w-full h-[300px] bg-white border-b border-gray-200 flex flex-col transition-all duration-300",
@@ -72,23 +62,6 @@ const MobileCard = ({ index, product, region, countryCode }: MobileCardProps) =>
           <span className="text-sm text-gray-600">{price}</span>
         </div>
       </div>
-      {isLoading && (
-        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-          <svg
-            className="w-10 h-10 text-white animate-spin"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-          >
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-            <path
-              className="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-            ></path>
-          </svg>
-        </div>
-      )}
     </LocalizedClientLink>
   );
 };

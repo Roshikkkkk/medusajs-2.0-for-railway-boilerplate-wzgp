@@ -8,6 +8,7 @@ import MobileModal from "../mobile-modal";
 import { getCollectionByHandle } from "@lib/data/collections";
 import { getProductsById, getProductsList } from "@lib/data/products";
 import { getRegion } from "@lib/data/regions";
+import CatalogMobileBtn from "../catalog-mobile-btn"; // Импорт нового компонента
 
 // Определяем тип для queryParams, если он не определён в библиотеке
 interface ProductListQueryParams {
@@ -109,55 +110,7 @@ export default function MobileGrid({ className, collections, countryCode }: Mobi
       )}
     >
       <div className="px-4 py-4">
-        <div className="flex justify-between items-center relative">
-          <button
-            onClick={toggleModal}
-            className={clx(
-              "flex items-center justify-center px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-900 rounded-md text-sm font-medium",
-              "transition-all duration-300 w-[180px] shadow-sm hover:shadow-md whitespace-nowrap"
-            )}
-            aria-label="Каталог товарів"
-            type="button"
-          >
-            <img
-              src="/icons/categories.svg"
-              alt="Categories"
-              className="w-5 h-5 mr-2"
-              onError={() => console.error("Failed to load categories.svg")}
-            />
-            <span>Каталог товарів</span>
-            <svg
-              className="w-5 h-5 ml-2"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-          <button
-            className={clx(
-              "flex items-center justify-center px-4 py-2.5 bg-gray-100 text-gray-900 rounded-md text-sm font-medium",
-              "transition-all duration-300 w-[180px] shadow-sm cursor-not-allowed"
-            )}
-            aria-label="Пошук"
-            type="button"
-            disabled
-          >
-            <img
-              src="/icons/search.svg"
-              alt="Search"
-              className="w-5 h-5 mr-2"
-              onError={() => console.error("Failed to load search.svg")}
-            />
-            <span>Пошук</span>
-          </button>
-          <div
-            className="absolute left-1/2 top-0 bottom-0 w-px bg-gray-200"
-            style={{ transform: "translateX(-50%)" }}
-          ></div>
-        </div>
+        <CatalogMobileBtn onClick={toggleModal} /> {/* Новая кнопка на всю ширину */}
       </div>
 
       <MobileModal isOpen={isModalOpen} onClose={toggleModal} />
