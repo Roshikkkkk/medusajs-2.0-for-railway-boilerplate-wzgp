@@ -1,80 +1,24 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { clx } from "@medusajs/ui";
 import MobileCard from "../mobile-card";
 import { HttpTypes } from "@medusajs/types";
 import MobileModal from "../mobile-modal";
-import { getCollectionByHandle } from "@lib/data/collections";
-import { getProductsById, getProductsList } from "@lib/data/products";
-import { getRegion } from "@lib/data/regions";
 import CatalogMobileBtn from "../catalog-mobile-btn";
-
-// Определяем тип для queryParams, если он не определён в библиотеке
-interface ProductListQueryParams {
-  collection_id?: string[];
-  limit?: number;
-}
 
 type MobileGridProps = {
   className?: string;
   collections: HttpTypes.StoreCollection[] | null;
   countryCode: string;
+  products: HttpTypes.StoreProduct[];
+  region: HttpTypes.StoreRegion | null;
 };
 
-export default function MobileGrid({ className, collections, countryCode }: MobileGridProps) {
+export default function MobileGrid({ className, collections, countryCode, products, region }: MobileGridProps) {
   const [visibleCount, setVisibleCount] = useState(6);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [products, setProducts] = useState<HttpTypes.StoreProduct[]>([]);
-  const [region, setRegion] = useState<HttpTypes.StoreRegion | null>(null);
-
-  useEffect(() => {
-    async function fetchPopularProducts() {
-      try {
-        setIsLoading(true);
-        const collection = await getCollectionByHandle("popular");
-        if (!collection?.id) {
-          console.error("Collection 'popular' not found");
-          return;
-        }
-        console.log("Collection:", collection);
-
-        const regionData = await getRegion(countryCode);
-        if (!regionData?.id) {
-          console.error("Region not found for countryCode:", countryCode);
-          return;
-        }
-        console.log("Region:", regionData);
-        setRegion(regionData);
-
-        const { response } = await getProductsList({
-          queryParams: { collection_id: [collection.id], limit: 12 } as ProductListQueryParams,
-          countryCode,
-        });
-        console.log("Products response:", response);
-
-        const productIds = response.products.map((p) => p.id!).filter(Boolean);
-        if (productIds.length > 0) {
-          const pricedProducts = await getProductsById({
-            ids: productIds,
-            regionId: regionData.id,
-          });
-          console.log("Priced products:", pricedProducts);
-          setProducts(pricedProducts);
-        } else {
-          console.log("No product IDs found");
-          setProducts([]);
-        }
-      } catch (error) {
-        console.error("Failed to fetch popular products:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchPopularProducts();
-  }, [countryCode]);
 
   const handleShowMore = () => {
     setIsLoading(true);
