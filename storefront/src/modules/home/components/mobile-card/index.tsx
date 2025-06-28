@@ -40,8 +40,8 @@ const MobileCard = ({ index, product, region, countryCode }: MobileCardProps) =>
           />
           <div className="absolute top-2 right-2">
             <img
-              src="/icons/info.svg"
-              alt="Info"
+              src="/icons/eye.svg"
+              alt="eye"
               className="w-5 h-5 fill-current"
               style={{ filter: "invert(74%) sepia(8%) saturate(200%) hue-rotate(180deg) brightness(95%) contrast(90%)" }}
             />

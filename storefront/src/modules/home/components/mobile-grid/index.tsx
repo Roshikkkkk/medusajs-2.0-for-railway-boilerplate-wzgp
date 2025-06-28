@@ -8,13 +8,12 @@ import MobileModal from "../mobile-modal";
 import { getCollectionByHandle } from "@lib/data/collections";
 import { getProductsById, getProductsList } from "@lib/data/products";
 import { getRegion } from "@lib/data/regions";
-import CatalogMobileBtn from "../catalog-mobile-btn"; // Импорт нового компонента
+import CatalogMobileBtn from "../catalog-mobile-btn";
 
 // Определяем тип для queryParams, если он не определён в библиотеке
 interface ProductListQueryParams {
   collection_id?: string[];
   limit?: number;
-  // Другие возможные параметры можно добавить
 }
 
 type MobileGridProps = {
@@ -39,30 +38,29 @@ export default function MobileGrid({ className, collections, countryCode }: Mobi
           console.error("Collection 'popular' not found");
           return;
         }
-        console.log("Collection:", collection); // Отладка
+        console.log("Collection:", collection);
 
         const regionData = await getRegion(countryCode);
         if (!regionData?.id) {
           console.error("Region not found for countryCode:", countryCode);
           return;
         }
-        console.log("Region:", regionData); // Отладка
+        console.log("Region:", regionData);
         setRegion(regionData);
 
         const { response } = await getProductsList({
-          queryParams: { collection_id: [collection.id], limit: 12 } as ProductListQueryParams, // Уточнённый тип
+          queryParams: { collection_id: [collection.id], limit: 12 } as ProductListQueryParams,
           countryCode,
         });
-        console.log("Products response:", response); // Отладка
+        console.log("Products response:", response);
 
-        // Запрашиваем товары с ценами через getProductsById
         const productIds = response.products.map((p) => p.id!).filter(Boolean);
         if (productIds.length > 0) {
           const pricedProducts = await getProductsById({
             ids: productIds,
             regionId: regionData.id,
           });
-          console.log("Priced products:", pricedProducts); // Отладка
+          console.log("Priced products:", pricedProducts);
           setProducts(pricedProducts);
         } else {
           console.log("No product IDs found");
@@ -90,7 +88,6 @@ export default function MobileGrid({ className, collections, countryCode }: Mobi
     setIsModalOpen(!isModalOpen);
   };
 
-  // Блокировка скролла страницы
   useEffect(() => {
     if (isModalOpen) {
       document.body.style.overflow = "hidden";
@@ -110,7 +107,8 @@ export default function MobileGrid({ className, collections, countryCode }: Mobi
       )}
     >
       <div className="px-4 py-4">
-        <CatalogMobileBtn onClick={toggleModal} /> {/* Новая кнопка на всю ширину */}
+        <CatalogMobileBtn onClick={toggleModal} />
+        <h2 className="text-2xl font-bold text-gray-800 mt-4 mb-4">Популярні товари</h2>
       </div>
 
       <MobileModal isOpen={isModalOpen} onClose={toggleModal} />
