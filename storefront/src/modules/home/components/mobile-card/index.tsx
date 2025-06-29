@@ -16,8 +16,8 @@ type MobileCardProps = {
   countryCode: string;
 };
 
-// Используем NEXT_PUBLIC_MEDUSA_BACKEND_URL для универсальности
-const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000";
+// Используем NEXT_PUBLIC_MEDUSA_BACKEND_URL для подмены
+const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://192.168.1.101:9000";
 
 const MobileCard = ({ index, product, region, countryCode }: MobileCardProps) => {
   const productName = product.title || "Без назви";
@@ -25,12 +25,10 @@ const MobileCard = ({ index, product, region, countryCode }: MobileCardProps) =>
   const price = cheapestPrice?.calculated_price
     ? cheapestPrice.calculated_price.replace("UAH", "₴")
     : "Ціна не вказана";
-  // Используем images[0].url приоритетно, подменяем localhost на BACKEND_URL
-  const thumbnailUrl = product.images && product.images.length > 0
-    ? product.images[0].url.replace("http://localhost:9000/static", `${BACKEND_URL}/static`)
-    : product.thumbnail
-    ? product.thumbnail.replace("http://localhost:9000/static", `${BACKEND_URL}/static`)
-    : "/images/placeholder.jpg";
+  // Используем images[0].url как в Thumbnail, подменяем localhost на BACKEND_URL
+  const thumbnailUrl = (product.images && product.images.length > 0 ? product.images[0].url : product.thumbnail)
+    ?.replace("http://localhost:9000/static", `${BACKEND_URL}/static`)
+    || "/images/placeholder.jpg";
 
   return (
     <LocalizedClientLink href={`/products/${product.handle}?countryCode=${countryCode}`} className="block">
