@@ -16,8 +16,8 @@ type MobileCardProps = {
   countryCode: string;
 };
 
-// Используем NEXT_PUBLIC_MEDUSA_BACKEND_URL из .env.local
-const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://192.168.1.101:9000";
+// Используем NEXT_PUBLIC_MEDUSA_BACKEND_URL для универсальности
+const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://localhost:9000";
 
 const MobileCard = ({ index, product, region, countryCode }: MobileCardProps) => {
   const productName = product.title || "Без назви";
