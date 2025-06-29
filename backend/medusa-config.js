@@ -14,13 +14,13 @@ const medusaConfig = {
       authCors: AUTH_CORS,
       storeCors: STORE_CORS,
       jwtSecret: JWT_SECRET,
-      cookieSecret: COOKIE_SECRET
+      cookieSecret: COOKIE_SECRET,
     },
     build: {
       rollupOptions: {
-        external: ["@medusajs/dashboard"]
-      }
-    }
+        external: ["@medusajs/dashboard"],
+      },
+    },
   },
   admin: {
     backendUrl: BACKEND_URL,
@@ -32,31 +32,32 @@ const medusaConfig = {
       resolve: '@medusajs/file',
       options: {
         providers: [
-          ...(MINIO_ENDPOINT && MINIO_ACCESS_KEY && MINIO_SECRET_KEY ? [{
-            resolve: './src/modules/minio-file',
+          {
+            resolve: '@medusajs/file-s3',
             id: 'minio',
             options: {
-              endPoint: MINIO_ENDPOINT,
-              accessKey: MINIO_ACCESS_KEY,
-              secretKey: MINIO_SECRET_KEY,
-              bucket: MINIO_BUCKET
-            }
-          }] : [{
-            resolve: '@medusajs/file-local',
-            id: 'local',
-            options: {
-              upload_dir: 'static',
-              backend_url: `${BACKEND_URL}/static`
-            }
-          }])
-        ]
-      }
+              s3_url: MINIO_ENDPOINT,
+              bucket: MINIO_BUCKET || 'medusa-media', // Указываем твой бакет
+              aws_access_key_id: MINIO_ACCESS_KEY,
+              aws_secret_access_key: MINIO_SECRET_KEY,
+              region: 'us-east-1',
+            },
+          },
+        ],
+      },
     },
-    // ... (інші модулі без змін)
+    {
+      key: Modules.SEARCH,
+      resolve: '@medusajs/search-meilisearch',
+      options: {
+        config: {
+          host: MEILISEARCH_HOST,
+          apiKey: MEILISEARCH_ADMIN_KEY,
+        },
+      },
+    },
   ],
-  plugins: [
-    // ... (плагіни без змін)
-  ]
+  plugins: [],
 };
 
 console.log(JSON.stringify(medusaConfig, null, 2));

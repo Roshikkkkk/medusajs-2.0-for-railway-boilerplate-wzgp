@@ -23,7 +23,7 @@ export default function MobileGrid({ className, collections, countryCode, produc
   const handleShowMore = () => {
     setIsLoading(true);
     setTimeout(() => {
-      setVisibleCount(12);
+      setVisibleCount((prev) => prev + 6);
       setIsLoading(false);
     }, 500);
   };
@@ -59,14 +59,14 @@ export default function MobileGrid({ className, collections, countryCode, produc
 
       <div
         className="grid grid-cols-2 w-full overflow-hidden transition-all duration-500 border-t border-gray-200"
-        style={{ maxHeight: visibleCount === 6 ? "900px" : "1800px" }}
+        style={{ maxHeight: `${visibleCount * 150}px` }}
       >
         {products.slice(0, visibleCount).map((product, index) => (
           <div
             key={product.id}
             className={clx(
               "transition-opacity duration-500",
-              index >= 6 && visibleCount === 6 ? "opacity-0" : "opacity-100"
+              index >= 6 && visibleCount <= 6 ? "opacity-0" : "opacity-100"
             )}
           >
             <MobileCard index={index} product={product} region={region} countryCode={countryCode} />
