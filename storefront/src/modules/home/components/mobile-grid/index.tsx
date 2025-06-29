@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { clx } from "@medusajs/ui";
 import MobileCard from "../mobile-card";
 import { HttpTypes } from "@medusajs/types";
@@ -16,47 +16,61 @@ type MobileGridProps = {
 };
 
 export default function MobileGrid({ className, collections, countryCode, products, region }: MobileGridProps) {
-  const [visibleCount, setVisibleCount] = useState(6);
+  const [visibleCount, setVisibleCount] = useState(6); // Початкові 6 товарів
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const observerRef = useRef<HTMLDivElement | null>(null);
 
-  // Завантаження стану з localStorage при монтуванні компонента
+  // Завантаження стану з localStorage
   useEffect(() => {
     try {
       const saved = localStorage.getItem("visibleProductCount");
       if (saved && !isNaN(parseInt(saved, 10))) {
-        const savedCount = parseInt(saved, 10);
-        // Скидаємо до 6, якщо перезавантаження в новій вкладці і savedCount >= products.length
-        if (savedCount >= products.length) {
-          setVisibleCount(6);
-          localStorage.setItem("visibleProductCount", "6");
-        } else {
-          setVisibleCount(savedCount);
-        }
+        setVisibleCount(parseInt(saved, 10));
       }
       console.log("Initialized visibleCount:", visibleCount, "products length:", products.length);
     } catch (e) {
-      console.error("Не вдалося завантажити visibleCount з localStorage:", e);
+      console.error("LocalStorage error:", e);
     }
-  }, [products.length]); // Додано залежність від products.length для скиду при зміні даних
+  }, []);
 
-  // Збереження стану в localStorage при зміні visibleCount
+  // Збереження стану в localStorage
   useEffect(() => {
     try {
       localStorage.setItem("visibleProductCount", visibleCount.toString());
       console.log("Saved visibleCount:", visibleCount);
     } catch (e) {
-      console.error("Не вдалося зберегти visibleCount у localStorage:", e);
+      console.error("LocalStorage error:", e);
     }
   }, [visibleCount]);
 
-  const handleShowMore = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setVisibleCount((prev) => prev + 6);
-      setIsLoading(false);
-    }, 500);
-  };
+  // Lazy load при скролінгу
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && !isLoading && visibleCount < products.length) {
+          console.log("Intersection detected, loading more at:", visibleCount);
+          setIsLoading(true);
+          setTimeout(() => {
+            const remaining = products.length - visibleCount;
+            setVisibleCount((prev) => prev + (remaining >= 6 ? 6 : remaining)); // 6 або залишок
+            setIsLoading(false);
+          }, 500); // Затримка для плавності
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observer.unobserve(observerRef.current);
+      }
+    };
+  }, [isLoading, visibleCount, products.length]);
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
@@ -96,7 +110,7 @@ export default function MobileGrid({ className, collections, countryCode, produc
             key={product.id}
             className={clx(
               "transition-opacity duration-500",
-              index >= 6 && visibleCount <= 6 ? "opacity-0" : "opacity-100"
+              index >= visibleCount - 6 ? "opacity-0" : "opacity-100"
             )}
           >
             <MobileCard index={index} product={product} region={region} countryCode={countryCode} />
@@ -105,42 +119,29 @@ export default function MobileGrid({ className, collections, countryCode, produc
       </div>
 
       {visibleCount < products.length && (
-        <div className="mt-4 flex justify-center">
-          <button
-            onClick={handleShowMore}
-            disabled={isLoading}
-            className={clx(
-              "h-12 px-6 bg-[#007AFF] text-white rounded-full text-sm font-medium",
-              "hover:bg-[#0051CC] transition-all duration-300 inline-flex items-center justify-center",
-              isLoading ? "opacity-75 cursor-not-allowed w-[180px]" : "w-[150px] hover:shadow-md"
-            )}
-            aria-label="Показати ще"
-            type="button"
-          >
-            <span>{isLoading ? "Зачекайте" : "Показати ще"}</span>
-            {isLoading && (
-              <svg
-                className="ml-2 w-5 h-5 animate-spin"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                ></path>
-              </svg>
-            )}
-          </button>
+        <div ref={observerRef} className="flex justify-center py-4">
+          {isLoading && (
+            <svg
+              className="ml-2 w-5 h-5 animate-spin"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+              ></path>
+            </svg>
+          )}
         </div>
       )}
     </div>
