@@ -3,19 +3,51 @@ import HeroSlider from "@modules/home/components/hero-slider";
 import MobileGrid from "@modules/home/components/mobile-grid";
 import DesktopGrid from "@modules/home/components/desktop-grid";
 import { listCategories } from "@lib/data/categories";
+import { getCollectionByHandle } from "@lib/data/collections";
+import { getProductsById, getProductsList } from "@lib/data/products";
+import { getRegion } from "@lib/data/regions";
 import { clx } from "@medusajs/ui";
 import { HttpTypes } from "@medusajs/types";
 
+// Интерфейс для пропсов Hero
 interface HeroProps {
   collections: HttpTypes.StoreCollection[] | null;
   countryCode: string;
-  products: HttpTypes.StoreProduct[];
-  region: HttpTypes.StoreRegion | null;
 }
 
-const Hero = async ({ collections, countryCode, products, region }: HeroProps) => {
+// Интерфейс для queryParams в getProductsList
+interface ProductListQueryParams {
+  collection_id?: string[];
+  limit?: number;
+}
+
+const Hero = async ({ collections, countryCode }: HeroProps) => {
   const categories = await listCategories();
-  console.log("Hero: products count =", products.length);
+  let products: HttpTypes.StoreProduct[] = [];
+  let region: HttpTypes.StoreRegion | null = null;
+
+  try {
+    const collection = await getCollectionByHandle("popular");
+    if (collection?.id) {
+      const regionData = await getRegion(countryCode);
+      if (regionData?.id) {
+        region = regionData;
+        const { response } = await getProductsList({
+          queryParams: { collection_id: [collection.id], limit: 12 } as ProductListQueryParams,
+          countryCode,
+        });
+        const productIds = response.products.map((p) => p.id!).filter(Boolean);
+        if (productIds.length > 0) {
+          products = await getProductsById({
+            ids: productIds,
+            regionId: regionData.id,
+          });
+        }
+      }
+    }
+  } catch (error) {
+    console.error("Failed to fetch popular products in Hero:", error);
+  }
 
   return (
     <div className="w-full border-b border-ui-border-base bg-ui-bg-subtle">

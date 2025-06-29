@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { clx } from "@medusajs/ui";
 import MobileCard from "../mobile-card";
 import { HttpTypes } from "@medusajs/types";
@@ -16,12 +16,11 @@ type MobileGridProps = {
 };
 
 export default function MobileGrid({ className, collections, countryCode, products, region }: MobileGridProps) {
-  const [visibleCount, setVisibleCount] = useState(6); // Начальное значение для сервера
+  const [visibleCount, setVisibleCount] = useState(6);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const observerRef = useRef<HTMLDivElement | null>(null);
 
-  // Инициализация visibleCount из localStorage только на клиенте
+  // Завантаження збереженого стану з localStorage при монтуванні компонента
   useEffect(() => {
     try {
       const saved = localStorage.getItem("visibleProductCount");
@@ -29,44 +28,26 @@ export default function MobileGrid({ className, collections, countryCode, produc
         setVisibleCount(parseInt(saved, 10));
       }
     } catch (e) {
-      console.error("LocalStorage error:", e);
+      console.error("Не вдалося завантажити visibleCount з localStorage:", e);
     }
   }, []);
 
-  // Сохранение visibleCount в localStorage
+  // Збереження visibleCount в localStorage при його зміні
   useEffect(() => {
     try {
       localStorage.setItem("visibleProductCount", visibleCount.toString());
     } catch (e) {
-      console.error("LocalStorage error:", e);
+      console.error("Не вдалося зберегти visibleCount в localStorage:", e);
     }
   }, [visibleCount]);
 
-  // Lazy load с IntersectionObserver
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && !isLoading && visibleCount < products.length) {
-          setIsLoading(true);
-          setTimeout(() => {
-            setVisibleCount((prev) => Math.min(prev + 6, products.length)); // Не превышаем длину products
-            setIsLoading(false);
-          }, 500); // Задержка для имитации загрузки
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    if (observerRef.current) {
-      observer.observe(observerRef.current);
-    }
-
-    return () => {
-      if (observerRef.current) {
-        observer.unobserve(observerRef.current);
-      }
-    };
-  }, [isLoading, visibleCount, products.length]);
+  const handleShowMore = () => {
+    setIsLoading(true);
+    setTimeout(() => {
+      setVisibleCount((prev) => prev + 6);
+      setIsLoading(false);
+    }, 500);
+  };
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
@@ -97,13 +78,16 @@ export default function MobileGrid({ className, collections, countryCode, produc
 
       <MobileModal isOpen={isModalOpen} onClose={toggleModal} />
 
-      <div className="grid grid-cols-2 w-full overflow-hidden transition-all duration-500 border-t border-gray-200">
+      <div
+        className="grid grid-cols-2 w-full overflow-hidden transition-all duration-500 border-t border-gray-200"
+        style={{ maxHeight: `${visibleCount * 150}px` }}
+      >
         {products.slice(0, visibleCount).map((product, index) => (
           <div
             key={product.id}
             className={clx(
               "transition-opacity duration-500",
-              index >= visibleCount - 6 ? "opacity-0" : "opacity-100"
+              index >= 6 && visibleCount <= 6 ? "opacity-0" : "opacity-100"
             )}
           >
             <MobileCard index={index} product={product} region={region} countryCode={countryCode} />
@@ -112,29 +96,42 @@ export default function MobileGrid({ className, collections, countryCode, produc
       </div>
 
       {visibleCount < products.length && (
-        <div ref={observerRef} className="flex justify-center py-4">
-          {isLoading && (
-            <svg
-              className="ml-2 w-5 h-5 animate-spin"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-            >
-              <circle
-                className="opacity-25"
-                cx="12"
-                cy="12"
-                r="10"
-                stroke="currentColor"
-                strokeWidth="4"
-              ></circle>
-              <path
-                className="opacity-75"
-                fill="currentColor"
-                d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-              ></path>
-            </svg>
-          )}
+        <div className="mt-4 flex justify-center">
+          <button
+            onClick={handleShowMore}
+            disabled={isLoading}
+            className={clx(
+              "h-12 px-6 bg-[#007AFF] text-white rounded-full text-sm font-medium",
+              "hover:bg-[#0051CC] transition-all duration-300 inline-flex items-center justify-center",
+              isLoading ? "opacity-75 cursor-not-allowed w-[180px]" : "w-[150px] hover:shadow-md"
+            )}
+            aria-label="Показати ще"
+            type="button"
+          >
+            <span>{isLoading ? "Зачекайте" : "Показати ще"}</span>
+            {isLoading && (
+              <svg
+                className="ml-2 w-5 h-5 animate-spin"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                ></path>
+              </svg>
+            )}
+          </button>
         </div>
       )}
     </div>
