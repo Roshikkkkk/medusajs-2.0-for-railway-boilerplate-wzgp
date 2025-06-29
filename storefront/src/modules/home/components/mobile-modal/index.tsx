@@ -45,7 +45,7 @@ const MobileModal = ({ isOpen, onClose }: MobileModalProps) => {
         <Nav onClose={onClose} />
         <div className="bg-gray-100 overflow-y-auto h-full">
           {isLoading ? (
-            <p className="text-center">Звантаження...</p>
+            <p className="text-center">Завантаження...</p>
           ) : error ? (
             <p className="text-red-500 text-center">{error}</p>
           ) : categories.length > 0 ? (
