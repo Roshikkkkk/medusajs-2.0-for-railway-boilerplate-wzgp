@@ -9,13 +9,13 @@ import { getRegion } from "@lib/data/regions";
 import { clx } from "@medusajs/ui";
 import { HttpTypes } from "@medusajs/types";
 
-// Інтерфейс для пропсів Hero
+// Интерфейс для пропсов Hero
 interface HeroProps {
   collections: HttpTypes.StoreCollection[] | null;
   countryCode: string;
 }
 
-// Інтерфейс для queryParams у getProductsList
+// Интерфейс для queryParams в getProductsList
 interface ProductListQueryParams {
   collection_id?: string[];
   limit?: number;
@@ -27,45 +27,21 @@ const Hero = async ({ collections, countryCode }: HeroProps) => {
   let region: HttpTypes.StoreRegion | null = null;
 
   try {
-    console.log("Fetching collection 'popular'...");
     const collection = await getCollectionByHandle("popular");
-    console.log("Collection 'popular' fetched:", collection);
-
     if (collection?.id) {
       const regionData = await getRegion(countryCode);
       if (regionData?.id) {
         region = regionData;
-        console.log("Fetching products with limit 20...");
         const { response } = await getProductsList({
-          queryParams: { collection_id: [collection.id], limit: 20 } as ProductListQueryParams,
+          queryParams: { collection_id: [collection.id], limit: 12 } as ProductListQueryParams,
           countryCode,
         });
-        console.log("Products response length:", response.products.length);
-
         const productIds = response.products.map((p) => p.id!).filter(Boolean);
         if (productIds.length > 0) {
           products = await getProductsById({
             ids: productIds,
             regionId: regionData.id,
           });
-          console.log("Fetched products count:", products.length);
-        } else {
-          console.log("No products in 'popular', using fallback...");
-          if (collections && collections.length > 0) {
-            const fallbackCollection = collections[0];
-            const { response: fallbackResponse } = await getProductsList({
-              queryParams: { collection_id: [fallbackCollection.id], limit: 20 },
-              countryCode,
-            });
-            const fallbackIds = fallbackResponse.products.map((p) => p.id!).filter(Boolean);
-            if (fallbackIds.length > 0) {
-              products = await getProductsById({
-                ids: fallbackIds,
-                regionId: regionData.id,
-              });
-              console.log("Fallback products count:", products.length);
-            }
-          }
         }
       }
     }
