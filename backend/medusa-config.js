@@ -1,12 +1,12 @@
 import { loadEnv, Modules, defineConfig } from '@medusajs/utils';
-import { ADMIN_CORS, AUTH_CORS, BACKEND_URL, COOKIE_SECRET, DATABASE_URL, JWT_SECRET, REDIS_URL, RESEND_API_KEY, RESEND_FROM_EMAIL, SENDGRID_API_KEY, SENDGRID_FROM_EMAIL, SHOULD_DISABLE_ADMIN, STORE_CORS, STRIPE_API_KEY, STRIPE_WEBHOOK_SECRET, WORKER_MODE } from 'lib/constants';
+import { ADMIN_CORS, AUTH_CORS, BACKEND_URL, COOKIE_SECRET, DATABASE_URL, JWT_SECRET, REDIS_URL, RESEND_API_KEY, RESEND_FROM_EMAIL, SENDGRID_API_KEY, SENDGRID_FROM_EMAIL, SHOULD_DISABLE_ADMIN, STORE_CORS, STRIPE_API_KEY, STRIPE_WEBHOOK_SECRET, WORKER_MODE, MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET, MEILISEARCH_HOST, MEILISEARCH_ADMIN_KEY } from 'lib/constants';
 
 loadEnv(process.env.NODE_ENV, process.cwd());
 
 const medusaConfig = {
   projectConfig: {
     databaseUrl: DATABASE_URL,
-    databaseLogging: true, // Логи для отладки
+    databaseLogging: false,
     redisUrl: REDIS_URL,
     workerMode: WORKER_MODE,
     http: {
@@ -14,25 +14,13 @@ const medusaConfig = {
       authCors: AUTH_CORS,
       storeCors: STORE_CORS,
       jwtSecret: JWT_SECRET,
-      cookieSecret: COOKIE_SECRET,
-      healthCheck: {
-        path: '/health',
-        healthy: async () => {
-          try {
-            await new Promise(resolve => setTimeout(resolve, 100));
-            return true;
-          } catch (e) {
-            console.error("Healthcheck failed:", e);
-            return false;
-          }
-        },
-      },
+      cookieSecret: COOKIE_SECRET
     },
     build: {
       rollupOptions: {
-        external: ["@medusajs/dashboard"],
-      },
-    },
+        external: ["@medusajs/dashboard"]
+      }
+    }
   },
   admin: {
     backendUrl: BACKEND_URL,
@@ -44,19 +32,31 @@ const medusaConfig = {
       resolve: '@medusajs/file',
       options: {
         providers: [
-          {
+          ...(MINIO_ENDPOINT && MINIO_ACCESS_KEY && MINIO_SECRET_KEY ? [{
+            resolve: './src/modules/minio-file',
+            id: 'minio',
+            options: {
+              endPoint: MINIO_ENDPOINT,
+              accessKey: MINIO_ACCESS_KEY,
+              secretKey: MINIO_SECRET_KEY,
+              bucket: MINIO_BUCKET
+            }
+          }] : [{
             resolve: '@medusajs/file-local',
             id: 'local',
             options: {
-              upload_dir: 'uploads',
-              backend_url: `${BACKEND_URL}/uploads`,
-            },
-          },
-        ],
-      },
+              upload_dir: 'static',
+              backend_url: `${BACKEND_URL}/static`
+            }
+          }])
+        ]
+      }
     },
+    // ... (інші модулі без змін)
   ],
-  plugins: [],
+  plugins: [
+    // ... (плагіни без змін)
+  ]
 };
 
 console.log(JSON.stringify(medusaConfig, null, 2));

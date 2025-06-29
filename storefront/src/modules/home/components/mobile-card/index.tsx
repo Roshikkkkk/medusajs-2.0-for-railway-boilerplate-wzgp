@@ -16,14 +16,21 @@ type MobileCardProps = {
   countryCode: string;
 };
 
+// Используем NEXT_PUBLIC_MEDUSA_BACKEND_URL из .env.local
+const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://192.168.1.101:9000";
+
 const MobileCard = ({ index, product, region, countryCode }: MobileCardProps) => {
   const productName = product.title || "Без назви";
-  console.log("Product ID:", product.id, "Thumbnail:", product.thumbnail); // Отладка
   const { cheapestPrice } = getProductPrice({ product, region } as GetProductPriceParams);
   const price = cheapestPrice?.calculated_price
     ? cheapestPrice.calculated_price.replace("UAH", "₴")
     : "Ціна не вказана";
-  const thumbnail = product.thumbnail || "https://via.placeholder.com/225"; // Запасной URL, если thumbnail пуст
+  // Используем images[0].url приоритетно, подменяем localhost на BACKEND_URL
+  const thumbnailUrl = product.images && product.images.length > 0
+    ? product.images[0].url.replace("http://localhost:9000/static", `${BACKEND_URL}/static`)
+    : product.thumbnail
+    ? product.thumbnail.replace("http://localhost:9000/static", `${BACKEND_URL}/static`)
+    : "/images/placeholder.jpg";
 
   return (
     <LocalizedClientLink href={`/products/${product.handle}?countryCode=${countryCode}`} className="block">
@@ -35,10 +42,9 @@ const MobileCard = ({ index, product, region, countryCode }: MobileCardProps) =>
       >
         <div className="relative w-full h-[225px]">
           <img
-            src={thumbnail}
+            src={thumbnailUrl}
             alt={productName}
             className="absolute w-full h-full object-cover object-top"
-            onError={(e) => console.log("Image load failed for:", thumbnail, e)} // Отладка ошибок
           />
           <div className="absolute top-2 right-2">
             <img
