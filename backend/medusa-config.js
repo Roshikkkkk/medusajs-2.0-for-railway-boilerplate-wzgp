@@ -6,7 +6,7 @@ loadEnv(process.env.NODE_ENV, process.cwd());
 const medusaConfig = {
   projectConfig: {
     databaseUrl: DATABASE_URL,
-    databaseLogging: false,
+    databaseLogging: true, // Включи логи для отладки
     redisUrl: REDIS_URL,
     workerMode: WORKER_MODE,
     http: {
@@ -15,6 +15,10 @@ const medusaConfig = {
       storeCors: STORE_CORS,
       jwtSecret: JWT_SECRET,
       cookieSecret: COOKIE_SECRET,
+      healthCheck: {
+        path: '/health', // Указываем маршрут для healthcheck
+        healthy: () => true, // Простая проверка, можно расширить
+      },
     },
     build: {
       rollupOptions: {
@@ -36,7 +40,7 @@ const medusaConfig = {
             resolve: '@medusajs/file-s3',
             id: 'minio',
             options: {
-              s3_url: `https://${MINIO_ENDPOINT}`, // Исправляем протокол
+              s3_url: `https://${MINIO_ENDPOINT}:443`,
               bucket: MINIO_BUCKET || 'medusa-media',
               aws_access_key_id: MINIO_ACCESS_KEY,
               aws_secret_access_key: MINIO_SECRET_KEY,
