@@ -25,17 +25,26 @@ export default function MobileGrid({ className, collections, countryCode, produc
     try {
       const saved = localStorage.getItem("visibleProductCount");
       if (saved && !isNaN(parseInt(saved, 10))) {
-        setVisibleCount(parseInt(saved, 10));
+        const savedCount = parseInt(saved, 10);
+        // Скидаємо до 6, якщо перезавантаження в новій вкладці і savedCount >= products.length
+        if (savedCount >= products.length) {
+          setVisibleCount(6);
+          localStorage.setItem("visibleProductCount", "6");
+        } else {
+          setVisibleCount(savedCount);
+        }
       }
+      console.log("Initialized visibleCount:", visibleCount, "products length:", products.length);
     } catch (e) {
       console.error("Не вдалося завантажити visibleCount з localStorage:", e);
     }
-  }, []);
+  }, [products.length]); // Додано залежність від products.length для скиду при зміні даних
 
   // Збереження стану в localStorage при зміні visibleCount
   useEffect(() => {
     try {
       localStorage.setItem("visibleProductCount", visibleCount.toString());
+      console.log("Saved visibleCount:", visibleCount);
     } catch (e) {
       console.error("Не вдалося зберегти visibleCount у localStorage:", e);
     }
@@ -79,7 +88,8 @@ export default function MobileGrid({ className, collections, countryCode, produc
       <MobileModal isOpen={isModalOpen} onClose={toggleModal} />
 
       <div
-        className="grid grid-cols-2 w-full transition-all duration-500 border-t border-gray-200"
+        className="grid grid-cols-2 w-full overflow-y-auto transition-all duration-500 border-t border-gray-200"
+        // Замінив overflow-hidden на overflow-y-auto, щоб уникнути обрізання
       >
         {products.slice(0, visibleCount).map((product, index) => (
           <div
