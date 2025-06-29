@@ -20,7 +20,7 @@ export default function MobileGrid({ className, collections, countryCode, produc
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Завантаження збереженого стану з localStorage при монтуванні компонента
+  // Завантаження стану з localStorage при монтуванні компонента
   useEffect(() => {
     try {
       const saved = localStorage.getItem("visibleProductCount");
@@ -32,12 +32,12 @@ export default function MobileGrid({ className, collections, countryCode, produc
     }
   }, []);
 
-  // Збереження visibleCount в localStorage при його зміні
+  // Збереження стану в localStorage при зміні visibleCount
   useEffect(() => {
     try {
       localStorage.setItem("visibleProductCount", visibleCount.toString());
     } catch (e) {
-      console.error("Не вдалося зберегти visibleCount в localStorage:", e);
+      console.error("Не вдалося зберегти visibleCount у localStorage:", e);
     }
   }, [visibleCount]);
 
@@ -79,8 +79,7 @@ export default function MobileGrid({ className, collections, countryCode, produc
       <MobileModal isOpen={isModalOpen} onClose={toggleModal} />
 
       <div
-        className="grid grid-cols-2 w-full overflow-hidden transition-all duration-500 border-t border-gray-200"
-        style={{ maxHeight: `${visibleCount * 150}px` }}
+        className="grid grid-cols-2 w-full transition-all duration-500 border-t border-gray-200"
       >
         {products.slice(0, visibleCount).map((product, index) => (
           <div
