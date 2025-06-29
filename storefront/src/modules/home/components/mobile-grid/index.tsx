@@ -16,62 +16,57 @@ type MobileGridProps = {
 };
 
 export default function MobileGrid({ className, collections, countryCode, products, region }: MobileGridProps) {
-  const [visibleCount, setVisibleCount] = useState<number>(() => {
-    if (typeof window !== "undefined") {
-      const saved = sessionStorage.getItem("visibleCount_popular");
-      return saved ? parseInt(saved, 10) : 6;
-    }
-    return 6;
-  });
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [visibleCount, setVisibleCount] = useState(6); // Начальное значение для сервера
+  const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const observerRef = useRef<HTMLDivElement | null>(null);
 
-  // Сохраняем visibleCount в sessionStorage
+  // Инициализация visibleCount из localStorage только на клиенте
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      sessionStorage.setItem("visibleCount_popular", visibleCount.toString());
+    try {
+      const saved = localStorage.getItem("visibleProductCount");
+      if (saved && !isNaN(parseInt(saved, 10))) {
+        setVisibleCount(parseInt(saved, 10));
+      }
+    } catch (e) {
+      console.error("LocalStorage error:", e);
+    }
+  }, []);
+
+  // Сохранение visibleCount в localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem("visibleProductCount", visibleCount.toString());
+    } catch (e) {
+      console.error("LocalStorage error:", e);
     }
   }, [visibleCount]);
 
-  // Сбрасываем visibleCount, если products изменились
+  // Lazy load с IntersectionObserver
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const saved = sessionStorage.getItem("visibleCount_popular");
-      const savedCount = saved ? parseInt(saved, 10) : 6;
-      if (products.length < savedCount) {
-        setVisibleCount(products.length);
-        sessionStorage.setItem("visibleCount_popular", products.length.toString());
-      } else {
-        setVisibleCount(savedCount);
-      }
-    }
-  }, [products]);
-
-  // Настройка IntersectionObserver для бесконечного скролла
-  useEffect(() => {
-    if (!observerRef.current || isLoading || visibleCount >= products.length) return;
-
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) {
+        if (entries[0].isIntersecting && !isLoading && visibleCount < products.length) {
           setIsLoading(true);
           setTimeout(() => {
-            setVisibleCount((prev) => {
-              const newCount = Math.min(prev + 6, products.length);
-              sessionStorage.setItem("visibleCount_popular", newCount.toString());
-              return newCount;
-            });
+            setVisibleCount((prev) => Math.min(prev + 6, products.length)); // Не превышаем длину products
             setIsLoading(false);
-          }, 500);
+          }, 500); // Задержка для имитации загрузки
         }
       },
       { threshold: 0.1 }
     );
 
-    observer.observe(observerRef.current);
-    return () => observer.disconnect();
-  }, [visibleCount, products.length, isLoading]);
+    if (observerRef.current) {
+      observer.observe(observerRef.current);
+    }
+
+    return () => {
+      if (observerRef.current) {
+        observer.unobserve(observerRef.current);
+      }
+    };
+  }, [isLoading, visibleCount, products.length]);
 
   const toggleModal = () => {
     setIsModalOpen(!isModalOpen);
@@ -102,13 +97,13 @@ export default function MobileGrid({ className, collections, countryCode, produc
 
       <MobileModal isOpen={isModalOpen} onClose={toggleModal} />
 
-      <div className="grid grid-cols-2 w-full gap-4 px-4">
+      <div className="grid grid-cols-2 w-full overflow-hidden transition-all duration-500 border-t border-gray-200">
         {products.slice(0, visibleCount).map((product, index) => (
           <div
             key={product.id}
             className={clx(
               "transition-opacity duration-500",
-              index >= 6 && visibleCount <= 6 ? "opacity-0" : "opacity-100"
+              index >= visibleCount - 6 ? "opacity-0" : "opacity-100"
             )}
           >
             <MobileCard index={index} product={product} region={region} countryCode={countryCode} />
@@ -117,10 +112,10 @@ export default function MobileGrid({ className, collections, countryCode, produc
       </div>
 
       {visibleCount < products.length && (
-        <div ref={observerRef} className="h-10 flex justify-center items-center">
+        <div ref={observerRef} className="flex justify-center py-4">
           {isLoading && (
             <svg
-              className="w-8 h-8 animate-spin text-[#007AFF]"
+              className="ml-2 w-5 h-5 animate-spin"
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
               viewBox="0 0 24 24"
