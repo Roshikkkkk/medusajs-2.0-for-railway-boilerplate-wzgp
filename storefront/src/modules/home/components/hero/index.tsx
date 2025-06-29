@@ -9,7 +9,19 @@ import { getRegion } from "@lib/data/regions";
 import { clx } from "@medusajs/ui";
 import { HttpTypes } from "@medusajs/types";
 
-const Hero = async ({ collections, countryCode }: { collections: HttpTypes.StoreCollection[] | null; countryCode: string }) => {
+// Интерфейс для пропсов Hero
+interface HeroProps {
+  collections: HttpTypes.StoreCollection[] | null;
+  countryCode: string;
+}
+
+// Интерфейс для queryParams в getProductsList
+interface ProductListQueryParams {
+  collection_id?: string[];
+  limit?: number;
+}
+
+const Hero = async ({ collections, countryCode }: HeroProps) => {
   const categories = await listCategories();
   let products: HttpTypes.StoreProduct[] = [];
   let region: HttpTypes.StoreRegion | null = null;
@@ -21,7 +33,7 @@ const Hero = async ({ collections, countryCode }: { collections: HttpTypes.Store
       if (regionData?.id) {
         region = regionData;
         const { response } = await getProductsList({
-          queryParams: { collection_id: [collection.id], limit: 12 },
+          queryParams: { collection_id: [collection.id], limit: 12 } as ProductListQueryParams,
           countryCode,
         });
         const productIds = response.products.map((p) => p.id!).filter(Boolean);

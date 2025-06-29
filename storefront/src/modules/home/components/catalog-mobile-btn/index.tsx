@@ -8,7 +8,7 @@ export default function CatalogMobileBtn({ onClick }: { onClick: () => void }) {
     <button
       onClick={onClick}
       className={clx(
-        "w-full h-14 flex items-center justify-between px-4 bg-gray-800 text-white rounded-lg text-base font-semibold focus:outline-none hover:bg-gray-600 transition-colors duration-300 shadow-md"
+        "w-full h-14 flex items-center justify-between px-4 bg-gray-900 text-white rounded-lg text-base font-semibold focus:outline-none select-none transition-colors duration-300 shadow-md"
       )}
       aria-label="Відкрити каталог товарів"
     >

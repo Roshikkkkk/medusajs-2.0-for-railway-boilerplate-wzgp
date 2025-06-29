@@ -3,10 +3,10 @@ import { HttpTypes } from "@medusajs/types";
 import { getProductPrice } from "@lib/util/get-product-price";
 import LocalizedClientLink from "@modules/common/components/localized-client-link";
 
-// Определяем тип параметров для getProductPrice, если он не определён
+// Определяем тип параметров для getProductPrice
 interface GetProductPriceParams {
   product: HttpTypes.StoreProduct;
-  region?: HttpTypes.StoreRegion | null | undefined; // Допускаем null и undefined
+  region?: HttpTypes.StoreRegion | null | undefined;
 }
 
 type MobileCardProps = {
@@ -18,11 +18,14 @@ type MobileCardProps = {
 
 const MobileCard = ({ index, product, region, countryCode }: MobileCardProps) => {
   const productName = product.title || "Без назви";
-  console.log("Product:", product); // Отладка
-  const { cheapestPrice } = getProductPrice({ product, region } as GetProductPriceParams); // Утверждение типа
-  console.log("Cheapest price:", cheapestPrice); // Отладка
-  const price = cheapestPrice?.calculated_price || "Ціна не вказана";
+  const { cheapestPrice } = getProductPrice({ product, region } as GetProductPriceParams);
+  const price = cheapestPrice?.calculated_price
+    ? cheapestPrice.calculated_price.replace("UAH", "₴")
+    : "Ціна не вказана";
   const thumbnail = product.thumbnail || "/images/placeholder.jpg";
+
+  // Временный текст для отладки на телефоне
+  const debugText = product.thumbnail ? "Фото есть" : "Фото нет";
 
   return (
     <LocalizedClientLink href={`/products/${product.handle}?countryCode=${countryCode}`} className="block">
@@ -46,6 +49,8 @@ const MobileCard = ({ index, product, region, countryCode }: MobileCardProps) =>
               style={{ filter: "invert(74%) sepia(8%) saturate(200%) hue-rotate(180deg) brightness(95%) contrast(90%)" }}
             />
           </div>
+          {/* Отладочный текст */}
+          <div className="absolute top-2 left-2 text-xs text-red-500">{debugText}</div>
         </div>
         <div className="flex flex-col p-2 h-[75px] justify-between">
           <span
@@ -59,7 +64,17 @@ const MobileCard = ({ index, product, region, countryCode }: MobileCardProps) =>
           >
             {productName}
           </span>
-          <span className="text-sm text-gray-600">{price}</span>
+          <div className="flex items-center justify-between">
+            <span className="text-[15px] text-gray-700 font-medium bg-gray-200 bg-opacity-50 px-2 py-0.5 rounded">{price}</span>
+            <span>
+              <img
+                src="/icons/cart.svg"
+                alt="cart"
+                className="w-5 h-5 fill-current"
+                style={{ filter: "invert(48%) sepia(79%) saturate(2476%) hue-rotate(190deg) brightness(100%) contrast(97%)" }}
+              />
+            </span>
+          </div>
         </div>
       </div>
     </LocalizedClientLink>
