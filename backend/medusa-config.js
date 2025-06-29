@@ -52,11 +52,8 @@ const medusaConfig = {
         ]
       }
     },
-    // ... (інші модулі без змін)
   ],
-  plugins: [
-    // ... (плагіни без змін)
-  ]
+  plugins: []
 };
 
 console.log(JSON.stringify(medusaConfig, null, 2));

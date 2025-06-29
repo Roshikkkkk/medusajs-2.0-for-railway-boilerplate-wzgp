@@ -3,9 +3,10 @@ import { HttpTypes } from "@medusajs/types";
 import { getProductPrice } from "@lib/util/get-product-price";
 import LocalizedClientLink from "@modules/common/components/localized-client-link";
 
+// Определяем тип параметров для getProductPrice, если он не определён
 interface GetProductPriceParams {
   product: HttpTypes.StoreProduct;
-  region?: HttpTypes.StoreRegion | null | undefined;
+  region?: HttpTypes.StoreRegion | null | undefined; // Допускаем null и undefined
 }
 
 type MobileCardProps = {
@@ -15,18 +16,15 @@ type MobileCardProps = {
   countryCode: string;
 };
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://192.168.1.101:9000";
-const MINIO_URL = process.env.NEXT_PUBLIC_MINIO_URL || "https://bucket-production-9a82.up.railway.app";
-
 const MobileCard = ({ index, product, region, countryCode }: MobileCardProps) => {
   const productName = product.title || "Без назви";
-  const { cheapestPrice } = getProductPrice({ product, region } as GetProductPriceParams);
+  console.log("Product:", product); // Отладка
+  const { cheapestPrice } = getProductPrice({ product, region } as GetProductPriceParams); // Утверждение типа
+  console.log("Cheapest price:", cheapestPrice); // Отладка
   const price = cheapestPrice?.calculated_price
     ? cheapestPrice.calculated_price.replace("UAH", "₴")
     : "Ціна не вказана";
-  const thumbnailUrl = (product.images && product.images.length > 0 ? product.images[0].url : product.thumbnail)
-    ?.replace("http://localhost:9000/static", MINIO_URL)
-    || "/images/placeholder.jpg";
+  const thumbnail = product.thumbnail || "/images/placeholder.jpg";
 
   return (
     <LocalizedClientLink href={`/products/${product.handle}?countryCode=${countryCode}`} className="block">
@@ -38,7 +36,7 @@ const MobileCard = ({ index, product, region, countryCode }: MobileCardProps) =>
       >
         <div className="relative w-full h-[225px]">
           <img
-            src={thumbnailUrl}
+            src={thumbnail}
             alt={productName}
             className="absolute w-full h-full object-cover object-top"
           />
