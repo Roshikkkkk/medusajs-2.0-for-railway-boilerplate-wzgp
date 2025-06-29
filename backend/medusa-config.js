@@ -1,5 +1,5 @@
 import { loadEnv, Modules, defineConfig } from '@medusajs/utils';
-import { ADMIN_CORS, AUTH_CORS, BACKEND_URL, COOKIE_SECRET, DATABASE_URL, JWT_SECRET, REDIS_URL, RESEND_API_KEY, RESEND_FROM_EMAIL, SENDGRID_API_KEY, SENDGRID_FROM_EMAIL, SHOULD_DISABLE_ADMIN, STORE_CORS, STRIPE_API_KEY, STRIPE_WEBHOOK_SECRET, WORKER_MODE } from 'lib/constants';
+import { ADMIN_CORS, AUTH_CORS, BACKEND_URL, COOKIE_SECRET, DATABASE_URL, JWT_SECRET, REDIS_URL, RESEND_API_KEY, RESEND_FROM_EMAIL, SENDGRID_API_KEY, SENDGRID_FROM_EMAIL, SHOULD_DISABLE_ADMIN, STORE_CORS, STRIPE_API_KEY, STRIPE_WEBHOOK_SECRET, WORKER_MODE, MINIO_ENDPOINT, MINIO_ACCESS_KEY, MINIO_SECRET_KEY, MINIO_BUCKET } from 'lib/constants';
 
 loadEnv(process.env.NODE_ENV, process.cwd());
 
@@ -45,11 +45,14 @@ const medusaConfig = {
       options: {
         providers: [
           {
-            resolve: '@medusajs/file-local',
-            id: 'local',
+            resolve: '@medusajs/file-s3',
+            id: 'minio',
             options: {
-              upload_dir: 'uploads',
-              backend_url: `${BACKEND_URL}/uploads`,
+              s3_url: `https://${MINIO_ENDPOINT}:443`,
+              bucket: MINIO_BUCKET || 'medusa-media',
+              aws_access_key_id: MINIO_ACCESS_KEY,
+              aws_secret_access_key: MINIO_SECRET_KEY,
+              region: 'us-east-1',
             },
           },
         ],
