@@ -28,25 +28,41 @@ const Hero = async ({ collections, countryCode }: HeroProps) => {
 
   try {
     const collection = await getCollectionByHandle("popular");
+    console.log("Collection:", collection); // Отладка
     if (collection?.id) {
       const regionData = await getRegion(countryCode);
+      console.log("Region:", regionData); // Отладка
       if (regionData?.id) {
         region = regionData;
         const { response } = await getProductsList({
           queryParams: { collection_id: [collection.id], limit: 12 } as ProductListQueryParams,
           countryCode,
         });
+        console.log("Products response:", response.products); // Отладка
         const productIds = response.products.map((p) => p.id!).filter(Boolean);
         if (productIds.length > 0) {
           products = await getProductsById({
             ids: productIds,
             regionId: regionData.id,
           });
+          console.log("Fetched products:", products); // Отладка
+        } else {
+          console.log("No product IDs found"); // Отладка
         }
+      } else {
+        console.log("No region ID"); // Отладка
       }
+    } else {
+      console.log("No collection ID"); // Отладка
     }
   } catch (error) {
     console.error("Failed to fetch popular products in Hero:", error);
+  }
+
+  // Заглушка, если products пустой
+  if (!products || products.length === 0) {
+    products = [{ id: "dummy", title: "No products", thumbnail: "/images/placeholder.jpg", handle: "dummy" }];
+    console.log("Using dummy products"); // Отладка
   }
 
   return (
