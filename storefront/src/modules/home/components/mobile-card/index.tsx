@@ -3,7 +3,6 @@ import { HttpTypes } from "@medusajs/types";
 import { getProductPrice } from "@lib/util/get-product-price";
 import LocalizedClientLink from "@modules/common/components/localized-client-link";
 
-// Определяем тип параметров для getProductPrice
 interface GetProductPriceParams {
   product: HttpTypes.StoreProduct;
   region?: HttpTypes.StoreRegion | null | undefined;
@@ -16,20 +15,19 @@ type MobileCardProps = {
   countryCode: string;
 };
 
-// Используем NEXT_PUBLIC_MEDUSA_BACKEND_URL и NEXT_PUBLIC_MINIO_ENDPOINT
 const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://192.168.1.101:9000";
 const MINIO_URL = process.env.NEXT_PUBLIC_MINIO_ENDPOINT || BACKEND_URL;
 
+const getImageUrl = (imageUrl?: string | null, thumbnail?: string | null): string => {
+  const baseUrl = imageUrl || thumbnail || "/images/placeholder.jpg";
+  return baseUrl.replace("http://localhost:9000/static", MINIO_URL);
+};
+
 const MobileCard = ({ index, product, region, countryCode }: MobileCardProps) => {
   const productName = product.title || "Без назви";
-  const { cheapestPrice } = getProductPrice({ product, region } as GetProductPriceParams);
-  const price = cheapestPrice?.calculated_price
-    ? cheapestPrice.calculated_price.replace("UAH", "₴")
-    : "Ціна не вказана";
-  // Используем images[0].url приоритетно, подменяем localhost на MINIO_URL
-  const thumbnailUrl = (product.images && product.images.length > 0 ? product.images[0].url : product.thumbnail)
-    ?.replace("http://localhost:9000/static", MINIO_URL)
-    || "/images/placeholder.jpg";
+  const { cheapestPrice } = region ? getProductPrice({ product, region } as GetProductPriceParams) : { cheapestPrice: null };
+  const price = cheapestPrice?.calculated_price?.replace("UAH", "₴") || "Ціна не вказана";
+  const thumbnailUrl = getImageUrl(product.images?.[0]?.url, product.thumbnail);
 
   return (
     <LocalizedClientLink href={`/products/${product.handle}?countryCode=${countryCode}`} className="block">
@@ -43,39 +41,33 @@ const MobileCard = ({ index, product, region, countryCode }: MobileCardProps) =>
           <img
             src={thumbnailUrl}
             alt={productName}
+            loading="lazy"
             className="absolute w-full h-full object-cover object-top"
           />
           <div className="absolute top-2 right-2">
             <img
               src="/icons/eye.svg"
-              alt="eye"
-              className="w-5 h-5 fill-current"
-              style={{ filter: "invert(74%) sepia(8%) saturate(200%) hue-rotate(180deg) brightness(95%) contrast(90%)" }}
+              alt="Переглянути товар"
+              className="w-5 h-5 fill-current eye-icon"
             />
           </div>
         </div>
         <div className="flex flex-col p-2 h-[75px] justify-between">
-          <span
-            className="text-sm font-medium text-gray-900 overflow-hidden"
-            style={{
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {productName}
-          </span>
+          <span className="text-base-regular text-gray-900 line-clamp-2">{productName}</span>
           <div className="flex items-center justify-between">
-            <span className="text-[15px] text-gray-700 font-medium bg-gray-200 bg-opacity-50 px-2 py-0.5 rounded">{price}</span>
-            <span>
+            <span className="text-small-regular text-gray-700 font-medium bg-gray-200 bg-opacity-50 px-2 py-0.5 rounded">
+              {price}
+            </span>
+            <button
+              aria-label="Додати до кошика"
+              className="focus:outline-none"
+            >
               <img
                 src="/icons/cart.svg"
-                alt="cart"
-                className="w-5 h-5 fill-current"
-                style={{ filter: "invert(48%) sepia(79%) saturate(2476%) hue-rotate(190deg) brightness(100%) contrast(97%)" }}
+                alt="Додати до кошика"
+                className="w-5 h-5 fill-current cart-icon"
               />
-            </span>
+            </button>
           </div>
         </div>
       </div>

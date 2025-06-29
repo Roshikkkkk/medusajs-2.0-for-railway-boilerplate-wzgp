@@ -5,48 +5,49 @@ import DesktopGrid from "@modules/home/components/desktop-grid";
 import { listCategories } from "@lib/data/categories";
 import { getCollectionByHandle } from "@lib/data/collections";
 import { getProductsById, getProductsList } from "@lib/data/products";
-import { getRegion } from "@lib/data/regions";
 import { clx } from "@medusajs/ui";
 import { HttpTypes } from "@medusajs/types";
 
-// Интерфейс для пропсов Hero
 interface HeroProps {
   collections: HttpTypes.StoreCollection[] | null;
   countryCode: string;
+  region: HttpTypes.StoreRegion | null;
 }
 
-// Интерфейс для queryParams в getProductsList
 interface ProductListQueryParams {
   collection_id?: string[];
   limit?: number;
 }
 
-const Hero = async ({ collections, countryCode }: HeroProps) => {
+const Hero = async ({ collections, countryCode, region }: HeroProps) => {
   const categories = await listCategories();
   let products: HttpTypes.StoreProduct[] = [];
-  let region: HttpTypes.StoreRegion | null = null;
 
   try {
     const collection = await getCollectionByHandle("popular");
-    if (collection?.id) {
-      const regionData = await getRegion(countryCode);
-      if (regionData?.id) {
-        region = regionData;
-        const { response } = await getProductsList({
-          queryParams: { collection_id: [collection.id], limit: 12 } as ProductListQueryParams,
-          countryCode,
+    if (collection?.id && region?.id) {
+      const { response } = await getProductsList({
+        queryParams: { collection_id: [collection.id], limit: 12 } as ProductListQueryParams,
+        countryCode,
+      });
+      const productIds = response.products?.map((p) => p.id).filter(Boolean) || [];
+      if (productIds.length > 0) {
+        products = await getProductsById({
+          ids: productIds,
+          regionId: region.id,
         });
-        const productIds = response.products.map((p) => p.id!).filter(Boolean);
-        if (productIds.length > 0) {
-          products = await getProductsById({
-            ids: productIds,
-            regionId: regionData.id,
-          });
-        }
       }
     }
   } catch (error) {
     console.error("Failed to fetch popular products in Hero:", error);
+  }
+
+  if (!products.length && !categories?.length) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-500 text-lg">Failed to load products or categories</p>
+      </div>
+    );
   }
 
   return (
@@ -68,22 +69,21 @@ const Hero = async ({ collections, countryCode }: HeroProps) => {
                     >
                       {category.name}
                     </a>
-                    {category.category_children &&
-                      category.category_children.length > 0 && (
-                        <ul className="grid grid-cols-1 gap-1">
-                          {category.category_children.map((child) => (
-                            <li key={child.id}>
-                              <a
-                                href={`/category/${child.handle}`}
-                                className="hover:bg-gray-100 hover:shadow-sm transition-all duration-200 rounded-large px-1 py-0.5"
-                                data-testid="category-link"
-                              >
-                                {child.name}
-                              </a>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
+                    {category.category_children?.length > 0 && (
+                      <ul className="grid grid-cols-1 gap-1">
+                        {category.category_children.map((child) => (
+                          <li key={child.id}>
+                            <a
+                              href={`/category/${child.handle}`}
+                              className="hover:bg-gray-100 hover:shadow-sm transition-all duration-200 rounded-large px-1 py-0.5"
+                              data-testid="category-link"
+                            >
+                              {child.name}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -94,7 +94,7 @@ const Hero = async ({ collections, countryCode }: HeroProps) => {
         </aside>
 
         <div className="w-full lg:w-[85%] flex flex-col">
-          <Suspense fallback={<div>Loading...</div>}>
+          <Suspense fallback={<div className="text-center py-12">Loading...</div>}>
             <HeroSlider />
             <MobileGrid
               className="md:hidden"

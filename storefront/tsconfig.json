@@ -26,7 +26,7 @@
       }
     ]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/modules/home/components/Mobile-Card-Skeleton"],
   "exclude": [
     "node_modules",
     ".next",

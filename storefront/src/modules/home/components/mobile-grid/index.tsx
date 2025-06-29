@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { clx } from "@medusajs/ui";
 import MobileCard from "../mobile-card";
+import MobileCardSkeleton from "../Mobile-Card-Skeleton";
 import { HttpTypes } from "@medusajs/types";
 import MobileModal from "../mobile-modal";
 import CatalogMobileBtn from "../catalog-mobile-btn";
@@ -17,39 +18,53 @@ type MobileGridProps = {
 
 export default function MobileGrid({ className, collections, countryCode, products, region }: MobileGridProps) {
   const [visibleCount, setVisibleCount] = useState(6);
-  const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const handleShowMore = () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setVisibleCount((prev) => prev + 6);
-      setIsLoading(false);
-    }, 500);
-  };
+  const [isLoading, setIsLoading] = useState(false);
+  const loaderRef = useRef<HTMLDivElement>(null);
 
   const toggleModal = () => {
-    setIsModalOpen(!isModalOpen);
+    setIsModalOpen((prev) => !prev);
   };
 
   useEffect(() => {
-    if (isModalOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "auto";
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (entry.isIntersecting && !isLoading && visibleCount < products.length) {
+          setIsLoading(true);
+          setTimeout(() => {
+            setVisibleCount((prev) => prev + 6);
+            setIsLoading(false);
+          }, 500); // Имитация задержки для UX, можно убрать для мгновенной подгрузки
+        }
+      },
+      { rootMargin: "100px" }
+    );
+
+    if (loaderRef.current) {
+      observer.observe(loaderRef.current);
     }
+
     return () => {
-      document.body.style.overflow = "auto";
+      if (loaderRef.current) {
+        observer.unobserve(loaderRef.current);
+      }
     };
-  }, [isModalOpen]);
+  }, [isLoading, visibleCount, products.length]);
+
+  if (!products.length) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500 text-lg">No popular products available</p>
+      </div>
+    );
+  }
+
+  // Рассчитываем количество скелетонов: либо оставшиеся товары, либо 6
+  const skeletonCount = Math.min(products.length - visibleCount, 6);
 
   return (
-    <div
-      className={clx(
-        "w-full pt-0 pb-4 bg-white border-t border-gray-200 mt-4",
-        className
-      )}
-    >
+    <div className={clx("w-full pt-0 pb-4 bg-white border-t border-gray-200 mt-4", className)}>
       <div className="px-4 py-4">
         <CatalogMobileBtn onClick={toggleModal} />
         <h2 className="text-2xl font-bold text-gray-800 mt-4 mb-4">Популярні товари</h2>
@@ -57,40 +72,26 @@ export default function MobileGrid({ className, collections, countryCode, produc
 
       <MobileModal isOpen={isModalOpen} onClose={toggleModal} />
 
-      <div
-        className="grid grid-cols-2 w-full overflow-hidden transition-all duration-500 border-t border-gray-200"
-        style={{ maxHeight: `${visibleCount * 150}px` }}
-      >
+      <div className="grid grid-cols-2 w-full overflow-hidden border-t border-gray-200">
         {products.slice(0, visibleCount).map((product, index) => (
-          <div
-            key={product.id}
-            className={clx(
-              "transition-opacity duration-500",
-              index >= 6 && visibleCount <= 6 ? "opacity-0" : "opacity-100"
-            )}
-          >
+          <div key={product.id} className="animate-fadeIn">
             <MobileCard index={index} product={product} region={region} countryCode={countryCode} />
           </div>
         ))}
+        {isLoading &&
+          Array.from({ length: skeletonCount }).map((_, index) => (
+            <div key={`skeleton-${index}`} className="animate-pulse">
+              <MobileCardSkeleton index={index} />
+            </div>
+          ))}
       </div>
 
       {visibleCount < products.length && (
-        <div className="mt-4 flex justify-center">
-          <button
-            onClick={handleShowMore}
-            disabled={isLoading}
-            className={clx(
-              "h-12 px-6 bg-[#007AFF] text-white rounded-full text-sm font-medium",
-              "hover:bg-[#0051CC] transition-all duration-300 inline-flex items-center justify-center",
-              isLoading ? "opacity-75 cursor-not-allowed w-[180px]" : "w-[150px] hover:shadow-md"
-            )}
-            aria-label="Показати ще"
-            type="button"
-          >
-            <span>{isLoading ? "Зачекайте" : "Показати ще"}</span>
-            {isLoading && (
+        <div ref={loaderRef} className="mt-4 flex justify-center">
+          {isLoading && (
+            <div className="h-12 w-[150px] flex items-center justify-center">
               <svg
-                className="ml-2 w-5 h-5 animate-spin"
+                className="w-5 h-5 animate-spin text-[#007AFF]"
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
@@ -109,8 +110,9 @@ export default function MobileGrid({ className, collections, countryCode, produc
                   d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
                 ></path>
               </svg>
-            )}
-          </button>
+              <span className="ml-2 text-sm text-[#007AFF]">Зачекайте...</span>
+            </div>
+          )}
         </div>
       )}
     </div>
