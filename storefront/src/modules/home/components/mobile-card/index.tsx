@@ -3,10 +3,9 @@ import { HttpTypes } from "@medusajs/types";
 import { getProductPrice } from "@lib/util/get-product-price";
 import LocalizedClientLink from "@modules/common/components/localized-client-link";
 
-// Определяем тип параметров для getProductPrice, если он не определён
 interface GetProductPriceParams {
   product: HttpTypes.StoreProduct;
-  region?: HttpTypes.StoreRegion | null | undefined; // Допускаем null и undefined
+  region?: HttpTypes.StoreRegion | null | undefined;
 }
 
 type MobileCardProps = {
@@ -18,13 +17,14 @@ type MobileCardProps = {
 
 const MobileCard = ({ index, product, region, countryCode }: MobileCardProps) => {
   const productName = product.title || "Без назви";
-  console.log("Product:", product); // Отладка
-  const { cheapestPrice } = getProductPrice({ product, region } as GetProductPriceParams); // Утверждение типа
-  console.log("Cheapest price:", cheapestPrice); // Отладка
+  console.log("Product ID:", product.id, "Thumbnail:", product.thumbnail);
+  const { cheapestPrice } = getProductPrice({ product, region } as GetProductPriceParams);
+  console.log("Cheapest price:", cheapestPrice);
   const price = cheapestPrice?.calculated_price
     ? cheapestPrice.calculated_price.replace("UAH", "₴")
     : "Ціна не вказана";
-  const thumbnail = product.thumbnail || "/images/placeholder.jpg";
+  const thumbnail = product.thumbnail || product.images?.[0]?.url || "/images/placeholder.jpg";
+  console.log("Final Thumbnail URL:", thumbnail);
 
   return (
     <LocalizedClientLink href={`/products/${product.handle}?countryCode=${countryCode}`} className="block">
@@ -39,6 +39,7 @@ const MobileCard = ({ index, product, region, countryCode }: MobileCardProps) =>
             src={thumbnail}
             alt={productName}
             className="absolute w-full h-full object-cover object-top"
+            onError={() => console.error(`Failed to load image for ${productName}: ${thumbnail}`)}
           />
           <div className="absolute top-2 right-2">
             <img
