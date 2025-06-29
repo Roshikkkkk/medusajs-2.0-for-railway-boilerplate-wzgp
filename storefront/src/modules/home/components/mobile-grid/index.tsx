@@ -7,6 +7,7 @@ import MobileCardSkeleton from "../Mobile-Card-Skeleton";
 import { HttpTypes } from "@medusajs/types";
 import MobileModal from "../mobile-modal";
 import CatalogMobileBtn from "../catalog-mobile-btn";
+import LocalizedClientLink from "@modules/common/components/localized-client-link";
 
 type MobileGridProps = {
   className?: string;
@@ -20,22 +21,30 @@ export default function MobileGrid({ className, collections, countryCode, produc
   const [visibleCount, setVisibleCount] = useState(6);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const loaderRef = useRef<HTMLDivElement>(null);
+  const maxProducts = Math.min(products.length, 18); // Ограничение до 18 или меньше
 
   const toggleModal = () => {
     setIsModalOpen((prev) => !prev);
   };
 
+  // Проверяем начальную загрузку
+  useEffect(() => {
+    if (products.length > 0) {
+      setIsInitialLoading(false);
+    }
+  }, [products]);
+
+  // Lazy loading с Intersection Observer
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;
-        if (entry.isIntersecting && !isLoading && visibleCount < products.length) {
+        if (entry.isIntersecting && !isLoading && !isInitialLoading && visibleCount < maxProducts) {
           setIsLoading(true);
-          setTimeout(() => {
-            setVisibleCount((prev) => prev + 6);
-            setIsLoading(false);
-          }, 500); // Имитация задержки для UX, можно убрать для мгновенной подгрузки
+          setVisibleCount((prev) => Math.min(prev + 6, maxProducts));
+          setIsLoading(false);
         }
       },
       { rootMargin: "100px" }
@@ -50,9 +59,9 @@ export default function MobileGrid({ className, collections, countryCode, produc
         observer.unobserve(loaderRef.current);
       }
     };
-  }, [isLoading, visibleCount, products.length]);
+  }, [isLoading, isInitialLoading, visibleCount, maxProducts]);
 
-  if (!products.length) {
+  if (!products.length && !isInitialLoading) {
     return (
       <div className="text-center py-12">
         <p className="text-gray-500 text-lg">No popular products available</p>
@@ -60,8 +69,8 @@ export default function MobileGrid({ className, collections, countryCode, produc
     );
   }
 
-  // Рассчитываем количество скелетонов: либо оставшиеся товары, либо 6
-  const skeletonCount = Math.min(products.length - visibleCount, 6);
+  // Количество скелетонов для подгрузки
+  const skeletonCount = Math.min(maxProducts - visibleCount, 6);
 
   return (
     <div className={clx("w-full pt-0 pb-4 bg-white border-t border-gray-200 mt-4", className)}>
@@ -73,12 +82,19 @@ export default function MobileGrid({ className, collections, countryCode, produc
       <MobileModal isOpen={isModalOpen} onClose={toggleModal} />
 
       <div className="grid grid-cols-2 w-full overflow-hidden border-t border-gray-200">
-        {products.slice(0, visibleCount).map((product, index) => (
-          <div key={product.id} className="animate-fadeIn">
-            <MobileCard index={index} product={product} region={region} countryCode={countryCode} />
-          </div>
-        ))}
-        {isLoading &&
+        {isInitialLoading
+          ? Array.from({ length: Math.min(products.length, 6) }).map((_, index) => (
+              <div key={`initial-skeleton-${index}`} className="animate-pulse">
+                <MobileCardSkeleton index={index} />
+              </div>
+            ))
+          : products.slice(0, visibleCount).map((product, index) => (
+              <div key={product.id} className="animate-fadeIn">
+                <MobileCard index={index} product={product} region={region} countryCode={countryCode} />
+              </div>
+            ))}
+        {!isInitialLoading &&
+          isLoading &&
           Array.from({ length: skeletonCount }).map((_, index) => (
             <div key={`skeleton-${index}`} className="animate-pulse">
               <MobileCardSkeleton index={index} />
@@ -86,7 +102,7 @@ export default function MobileGrid({ className, collections, countryCode, produc
           ))}
       </div>
 
-      {visibleCount < products.length && (
+      {visibleCount < maxProducts && (
         <div ref={loaderRef} className="mt-4 flex justify-center">
           {isLoading && (
             <div className="h-12 w-[150px] flex items-center justify-center">
@@ -113,6 +129,37 @@ export default function MobileGrid({ className, collections, countryCode, produc
               <span className="ml-2 text-sm text-[#007AFF]">Зачекайте...</span>
             </div>
           )}
+        </div>
+      )}
+
+      {visibleCount >= maxProducts && (
+        <div className="mt-4 flex justify-center">
+          <LocalizedClientLink href="/categories">
+            <button
+              className={clx(
+                "w-full h-14 flex items-center justify-between px-4 bg-gray-900 text-white rounded-lg text-base font-semibold focus:outline-none select-none transition-colors duration-300 shadow-md"
+              )}
+              aria-label="Відкрити каталог товарів"
+            >
+              <div className="flex items-center">
+                <img
+                  src="/icons/categories.svg"
+                  alt="Categories"
+                  className="w-6 h-6 mr-2 filter brightness-0 invert"
+                />
+                <span className="tracking-wide">Каталог товарів та пошук</span>
+              </div>
+              <svg
+                className="w-6 h-6 text-white"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </LocalizedClientLink>
         </div>
       )}
     </div>
