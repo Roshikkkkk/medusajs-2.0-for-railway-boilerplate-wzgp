@@ -3,6 +3,7 @@ import { HttpTypes } from "@medusajs/types";
 import { getProductPrice } from "@lib/util/get-product-price";
 import LocalizedClientLink from "@modules/common/components/localized-client-link";
 
+// Определяем тип параметров для getProductPrice
 interface GetProductPriceParams {
   product: HttpTypes.StoreProduct;
   region?: HttpTypes.StoreRegion | null | undefined;
@@ -15,8 +16,9 @@ type MobileCardProps = {
   countryCode: string;
 };
 
+// Используем NEXT_PUBLIC_MEDUSA_BACKEND_URL и NEXT_PUBLIC_MINIO_ENDPOINT
 const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://192.168.1.101:9000";
-const MINIO_URL = process.env.NEXT_PUBLIC_MINIO_ENDPOINT || "https://bucket-production-9a82.up.railway.app";
+const MINIO_URL = process.env.NEXT_PUBLIC_MINIO_ENDPOINT || BACKEND_URL;
 
 const MobileCard = ({ index, product, region, countryCode }: MobileCardProps) => {
   const productName = product.title || "Без назви";
@@ -24,6 +26,7 @@ const MobileCard = ({ index, product, region, countryCode }: MobileCardProps) =>
   const price = cheapestPrice?.calculated_price
     ? cheapestPrice.calculated_price.replace("UAH", "₴")
     : "Ціна не вказана";
+  // Используем images[0].url приоритетно, подменяем localhost на MINIO_URL
   const thumbnailUrl = (product.images && product.images.length > 0 ? product.images[0].url : product.thumbnail)
     ?.replace("http://localhost:9000/static", MINIO_URL)
     || "/images/placeholder.jpg";

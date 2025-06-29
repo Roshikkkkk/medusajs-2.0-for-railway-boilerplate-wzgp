@@ -52,7 +52,7 @@ const MobileModal = ({ isOpen, onClose }: MobileModalProps) => {
             <ul className="p-0 pl-4">
               {categories.map((cat) => (
                 <li key={cat.id ?? Math.random()} className="py-1">
-                  <a href={`/category/${cat.handle}`}>{cat.name ?? "Без назви"}</a>
+                  <a href={`/category/${cat.handle}`} className="text-lg">{cat.name ?? "Без назви"}</a>
                 </li>
               ))}
             </ul>
