@@ -2,52 +2,58 @@ import { Suspense } from "react";
 import HeroSlider from "@modules/home/components/hero-slider";
 import MobileGrid from "@modules/home/components/mobile-grid";
 import DesktopGrid from "@modules/home/components/desktop-grid";
-import { listCategories } from "@lib/data/categories";
+import { listCategories } from "@lib/data/categories"; // Verify this path
 import { getCollectionByHandle } from "@lib/data/collections";
 import { getProductsById, getProductsList } from "@lib/data/products";
+import { getRegion } from "@lib/data/regions";
 import { clx } from "@medusajs/ui";
 import { HttpTypes } from "@medusajs/types";
 
+// Интерфейс для пропсов Hero
 interface HeroProps {
   collections: HttpTypes.StoreCollection[] | null;
   countryCode: string;
-  region: HttpTypes.StoreRegion | null;
 }
 
+// Интерфейс для queryParams в getProductsList
 interface ProductListQueryParams {
   collection_id?: string[];
   limit?: number;
 }
 
-const Hero = async ({ collections, countryCode, region }: HeroProps) => {
-  const categories = await listCategories();
+const Hero = async ({ collections, countryCode }: HeroProps) => {
+  let categories: any[] = []; // Fallback to empty array
+  try {
+    categories = (await listCategories()) || []; // Ensure categories is an array
+  } catch (error) {
+    console.error("Failed to fetch categories in Hero:", error);
+  }
+
   let products: HttpTypes.StoreProduct[] = [];
+  let region: HttpTypes.StoreRegion | null = null;
 
   try {
     const collection = await getCollectionByHandle("popular");
-    if (collection?.id && region?.id) {
-      const { response } = await getProductsList({
-        queryParams: { collection_id: [collection.id], limit: 12 } as ProductListQueryParams,
-        countryCode,
-      });
-      const productIds = response.products?.map((p) => p.id).filter(Boolean) || [];
-      if (productIds.length > 0) {
-        products = await getProductsById({
-          ids: productIds,
-          regionId: region.id,
+    if (collection?.id) {
+      const regionData = await getRegion(countryCode);
+      if (regionData?.id) {
+        region = regionData;
+        const { response } = await getProductsList({
+          queryParams: { collection_id: [collection.id], limit: 12 } as ProductListQueryParams,
+          countryCode,
         });
+        const productIds = response.products.map((p) => p.id!).filter(Boolean);
+        if (productIds.length > 0) {
+          products = (await getProductsById({
+            ids: productIds,
+            regionId: regionData.id,
+          })) || [];
+        }
       }
     }
   } catch (error) {
     console.error("Failed to fetch popular products in Hero:", error);
-  }
-
-  if (!products.length && !categories?.length) {
-    return (
-      <div className="text-center py-12">
-        <p className="text-red-500 text-lg">Failed to load products or categories</p>
-      </div>
-    );
+    products = [];
   }
 
   return (
@@ -69,21 +75,22 @@ const Hero = async ({ collections, countryCode, region }: HeroProps) => {
                     >
                       {category.name}
                     </a>
-                    {category.category_children?.length > 0 && (
-                      <ul className="grid grid-cols-1 gap-1">
-                        {category.category_children.map((child) => (
-                          <li key={child.id}>
-                            <a
-                              href={`/category/${child.handle}`}
-                              className="hover:bg-gray-100 hover:shadow-sm transition-all duration-200 rounded-large px-1 py-0.5"
-                              data-testid="category-link"
-                            >
-                              {child.name}
-                            </a>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
+                    {category.category_children &&
+                      category.category_children.length > 0 && (
+                        <ul className="grid grid-cols-1 gap-1">
+                          {category.category_children.map((child) => (
+                            <li key={child.id}>
+                              <a
+                                href={`/category/${child.handle}`}
+                                className="hover:bg-gray-100 hover:shadow-sm transition-all duration-200 rounded-large px-1 py-0.5"
+                                data-testid="category-link"
+                              >
+                                {child.name}
+                              </a>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                   </li>
                 ))}
               </ul>
@@ -94,8 +101,8 @@ const Hero = async ({ collections, countryCode, region }: HeroProps) => {
         </aside>
 
         <div className="w-full lg:w-[85%] flex flex-col">
-          <Suspense fallback={<div className="text-center py-12">Loading...</div>}>
-            <HeroSlider />
+          <Suspense fallback={<div>Loading...</div>}>
+            <HeroSlider className="md:hidden" />
             <MobileGrid
               className="md:hidden"
               collections={collections}
@@ -103,7 +110,13 @@ const Hero = async ({ collections, countryCode, region }: HeroProps) => {
               products={products}
               region={region}
             />
-            <DesktopGrid className="hidden md:block" />
+            <DesktopGrid
+              className="hidden md:block"
+              collections={collections}
+              countryCode={countryCode}
+              products={products}
+              region={region}
+            />
           </Suspense>
         </div>
       </div>

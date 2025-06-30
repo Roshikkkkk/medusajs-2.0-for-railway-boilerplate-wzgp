@@ -109,7 +109,7 @@ const HeroSlider: React.FC = () => {
   }, [banners]);
 
   return (
-    <div className="w-full border-t border-transparent relative">
+    <div className="w-full border-t border-transparent relative md:hidden">
       <div
         ref={sliderRef}
         className="w-full overflow-x-auto snap-x snap-mandatory hide-scrollbar px-[30px] py-[20px] mt-0"
