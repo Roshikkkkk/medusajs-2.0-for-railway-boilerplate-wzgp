@@ -6,7 +6,6 @@ import { listCategories } from "@lib/data/categories";
 import { getCollectionByHandle } from "@lib/data/collections";
 import { getProductsById, getProductsList } from "@lib/data/products";
 import { getRegion } from "@lib/data/regions";
-import { clx } from "@medusajs/ui";
 import { HttpTypes } from "@medusajs/types";
 import CategoriesDesktop from "@modules/home/components/categories-desktop";
 import { getCollectionsList } from "@lib/data/collections";
@@ -21,14 +20,35 @@ interface ProductListQueryParams {
   limit?: number;
 }
 
-const Hero = async ({ collections: propCollections, countryCode }: HeroProps) => {
+// Wrapper component for CategoriesDesktop data fetching
+const CategoriesDesktopWrapper = async ({ countryCode }: { countryCode: string }) => {
   let categories: any[] = [];
+  let collections: HttpTypes.StoreCollection[] = [];
+
   try {
     categories = (await listCategories()) || [];
   } catch (error) {
-    console.error("Failed to fetch categories in Hero:", error);
+    console.error("Failed to fetch categories in CategoriesDesktopWrapper:", error);
   }
 
+  try {
+    const { collections: fetchedCollections } = await getCollectionsList(0, 10);
+    collections = fetchedCollections || [];
+  } catch (error) {
+    console.error("Failed to fetch collections in CategoriesDesktopWrapper:", error);
+  }
+
+  return (
+    <CategoriesDesktop
+      categories={categories}
+      collections={collections}
+      countryCode={countryCode}
+      isLoading={false}
+    />
+  );
+};
+
+const Hero = async ({ collections: propCollections, countryCode }: HeroProps) => {
   let products: HttpTypes.StoreProduct[] = [];
   let region: HttpTypes.StoreRegion | null = null;
 
@@ -56,19 +76,21 @@ const Hero = async ({ collections: propCollections, countryCode }: HeroProps) =>
     products = [];
   }
 
-  // Запрос списка коллекций
-  let collections: HttpTypes.StoreCollection[] = [];
-  try {
-    const { collections: fetchedCollections } = await getCollectionsList(0, 10);
-    collections = fetchedCollections || [];
-  } catch (error) {
-    console.error("Failed to fetch collections in Hero:", error);
-  }
-
   return (
     <div className="w-full border-b border-ui-border-base bg-ui-bg-subtle">
       <div className="flex flex-col lg:flex-row h-full">
-        <CategoriesDesktop categories={categories} collections={collections} countryCode={countryCode} />
+        <Suspense
+          fallback={
+            <CategoriesDesktop
+              categories={[]}
+              collections={[]}
+              countryCode={countryCode}
+              isLoading={true}
+            />
+          }
+        >
+          <CategoriesDesktopWrapper countryCode={countryCode} />
+        </Suspense>
 
         <div className="w-full lg:w-[88%] flex flex-col h-full">
           <Suspense fallback={<div>Loading...</div>}>

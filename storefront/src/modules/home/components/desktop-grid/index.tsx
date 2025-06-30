@@ -14,7 +14,7 @@ type DesktopGridProps = {
 };
 
 const DesktopGrid = ({ className, collections, countryCode, products = [], region }: DesktopGridProps) => {
-  const [visibleCount, setVisibleCount] = useState(12); // Установили начальное значение на 12
+  const [visibleCount, setVisibleCount] = useState(12); // Начальные 12 товаров
   const [isLoading, setIsLoading] = useState(false);
   const loaderRef = useRef<HTMLDivElement>(null);
   const maxProducts = Math.min(products.length, 100); // Максимум 100 товаров
