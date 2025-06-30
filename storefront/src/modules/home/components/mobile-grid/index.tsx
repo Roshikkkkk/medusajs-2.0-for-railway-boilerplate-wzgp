@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { clx } from "@medusajs/ui";
 import MobileCard from "../mobile-card";
-import MobileCardSkeleton from "../Mobile-Card-Skeleton";
+import MobileCardSkeleton from "../Mobile-Card-Skeleton.tsx";
 import { HttpTypes } from "@medusajs/types";
 import MobileModal from "../mobile-modal";
 import CatalogMobileBtn from "../catalog-mobile-btn";
