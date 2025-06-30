@@ -54,11 +54,11 @@ const DesktopGrid = ({ className, collections, countryCode, products = [], regio
 
   return (
     <div className={clx("w-full pt-0 pb-4 bg-white h-full p-0", className)}>
-      <div className="px-4 py-2">
-        <h2 className="text-xl font-bold text-gray-800 mt-4 mb-2">Популярні товари</h2>
+      <div className="py-2 pl-4 pr-4">
+        <h2 className="text-base font-semibold text-gray-800 mt-2 mb-2" style={{ color: '#2b2926' }}>Популярні товари</h2>
       </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 w-full border-t border-gray-200 h-full p-0">
+      <div className="border-t border-gray-200"></div>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 p-4">
         {products.slice(0, visibleCount).map((product, index) => (
           <div key={product.id} className={clx("animate-fadeIn", index < visibleCount - 1 && "border-b border-gray-200")}>
             <DesktopCard
