@@ -17,7 +17,7 @@ interface SliderIndicatorsProps {
 
 const SliderIndicators: React.FC<SliderIndicatorsProps> = ({ banners, centeredIndex }) => {
   return (
-    <div className="flex justify-center items-center h-8 pb-2 max-md:block md:hidden">
+    <div className="flex justify-center items-center h-3 pb-2 mt-2 max-md:block md:hidden">
       <div className="relative flex justify-center items-center">
         <div
           className={clx(
