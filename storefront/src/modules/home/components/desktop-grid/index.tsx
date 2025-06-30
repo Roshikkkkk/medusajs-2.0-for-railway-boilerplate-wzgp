@@ -9,7 +9,7 @@ type DesktopGridProps = {
   className?: string;
   collections: HttpTypes.StoreCollection[] | null;
   countryCode: string;
-  products?: HttpTypes.StoreProduct[]; // Make products optional
+  products?: HttpTypes.StoreProduct[];
   region: HttpTypes.StoreRegion | null;
 };
 
@@ -58,7 +58,7 @@ const DesktopGrid = ({ className, collections, countryCode, products = [], regio
         <h2 className="text-2xl font-bold text-gray-800 mt-4 mb-4">Популярні товари</h2>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 w-full overflow-hidden border-t border-gray-200">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 w-full overflow-hidden border-t border-gray-200">
         {products.slice(0, visibleCount).map((product, index) => (
           <div key={product.id} className="animate-fadeIn">
             <DesktopCard
