@@ -1,3 +1,4 @@
+
 import { Suspense } from "react";
 import HeroSlider from "@modules/home/components/hero-slider";
 import MobileGrid from "@modules/home/components/mobile-grid";
@@ -58,8 +59,8 @@ const Hero = async ({ collections, countryCode }: HeroProps) => {
 
   return (
     <div className="w-full border-b border-ui-border-base bg-ui-bg-subtle">
-      <div className="flex flex-col lg:flex-row min-h-[75vh]">
-        <aside className="hidden lg:block w-[15%] border-r border-ui-border-base p-2 pt-4 pl-10">
+      <div className="flex flex-col lg:flex-row h-full"> {/* Changed min-h-[75vh] to h-full */}
+        <aside className="hidden lg:block w-[12%] border-r border-ui-border-base p-2 pt-4 pl-10">
           <div className="h-full">
             {categories && categories.length > 0 ? (
               <ul className="grid grid-cols-1 gap-1 category-text">
@@ -100,7 +101,7 @@ const Hero = async ({ collections, countryCode }: HeroProps) => {
           </div>
         </aside>
 
-        <div className="w-full lg:w-[85%] flex flex-col">
+        <div className="w-full lg:w-[88%] flex flex-col h-full">
           <Suspense fallback={<div>Loading...</div>}>
             <HeroSlider className="md:hidden" />
             <MobileGrid
@@ -111,7 +112,7 @@ const Hero = async ({ collections, countryCode }: HeroProps) => {
               region={region}
             />
             <DesktopGrid
-              className="hidden md:block"
+              className="hidden md:block h-full"
               collections={collections}
               countryCode={countryCode}
               products={products}

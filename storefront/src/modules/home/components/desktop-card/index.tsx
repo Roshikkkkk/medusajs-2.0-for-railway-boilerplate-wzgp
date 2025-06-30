@@ -1,3 +1,4 @@
+
 "use client";
 
 import { clx } from "@medusajs/ui";
@@ -43,8 +44,7 @@ const DesktopCard = ({ index, product, region, countryCode }: DesktopCardProps) 
     <LocalizedClientLink href={`/products/${product.handle}?countryCode=${countryCode}`} className="block">
       <div
         className={clx(
-          "w-full h-[300px] bg-white border-b border-gray-200 flex flex-col transition-all duration-300",
-          index % 2 === 0 && "border-r border-gray-200"
+          "w-full h-[300px] bg-white flex flex-col transition-all duration-300 border-r border-gray-200"
         )}
       >
         <div className="relative w-full h-[225px] bg-gray-100">

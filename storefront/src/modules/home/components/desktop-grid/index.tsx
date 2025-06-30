@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
@@ -53,12 +54,12 @@ const DesktopGrid = ({ className, collections, countryCode, products = [], regio
   }
 
   return (
-    <div className={clx("w-full pt-0 pb-4 bg-white border-t border-gray-200 mt-4", className)}>
+    <div className={clx("w-full pt-0 pb-4 bg-white border-t border-gray-200 mt-4 h-full", className)}>
       <div className="px-4 py-4">
         <h2 className="text-2xl font-bold text-gray-800 mt-4 mb-4">Популярні товари</h2>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 w-full overflow-hidden border-t border-gray-200">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 w-full border-t border-gray-200 h-full">
         {products.slice(0, visibleCount).map((product, index) => (
           <div key={product.id} className="animate-fadeIn">
             <DesktopCard
