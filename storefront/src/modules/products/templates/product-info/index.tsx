@@ -1,3 +1,5 @@
+"use client"
+
 import { HttpTypes } from "@medusajs/types"
 import { Heading, Text } from "@medusajs/ui"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -15,7 +17,7 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
             href={`/collections/${product.collection.handle}`}
             className="text-medium text-ui-fg-muted hover:text-ui-fg-subtle"
           >
-            {product.collection.title}
+            {product.collection.title} колекція
           </LocalizedClientLink>
         )}
         <Heading
