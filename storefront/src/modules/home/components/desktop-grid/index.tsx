@@ -14,10 +14,10 @@ type DesktopGridProps = {
 };
 
 const DesktopGrid = ({ className, collections, countryCode, products = [], region }: DesktopGridProps) => {
-  const [visibleCount, setVisibleCount] = useState(5);
+  const [visibleCount, setVisibleCount] = useState(12); // Установили начальное значение на 12
   const [isLoading, setIsLoading] = useState(false);
   const loaderRef = useRef<HTMLDivElement>(null);
-  const maxProducts = Math.min(products.length, 100); // Ограничение до 5
+  const maxProducts = Math.min(products.length, 100); // Максимум 100 товаров
 
   // Lazy loading с Intersection Observer
   useEffect(() => {
@@ -58,7 +58,7 @@ const DesktopGrid = ({ className, collections, countryCode, products = [], regio
         <h2 className="text-base font-semibold text-gray-800 mt-2 mb-2" style={{ color: '#2b2926' }}>Популярні товари</h2>
       </div>
       <div className="border-t border-gray-200"></div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 p-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 w-full h-full p-0">
         {products.slice(0, visibleCount).map((product, index) => (
           <div key={product.id} className={clx("animate-fadeIn", index < visibleCount - 1 && "border-b border-gray-200")}>
             <DesktopCard
