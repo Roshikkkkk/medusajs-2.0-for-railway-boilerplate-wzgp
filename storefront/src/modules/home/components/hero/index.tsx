@@ -1,9 +1,8 @@
-
 import { Suspense } from "react";
 import HeroSlider from "@modules/home/components/hero-slider";
 import MobileGrid from "@modules/home/components/mobile-grid";
 import DesktopGrid from "@modules/home/components/desktop-grid";
-import { listCategories } from "@lib/data/categories"; // Verify this path
+import { listCategories } from "@lib/data/categories";
 import { getCollectionByHandle } from "@lib/data/collections";
 import { getProductsById, getProductsList } from "@lib/data/products";
 import { getRegion } from "@lib/data/regions";
@@ -59,7 +58,7 @@ const Hero = async ({ collections, countryCode }: HeroProps) => {
 
   return (
     <div className="w-full border-b border-ui-border-base bg-ui-bg-subtle">
-      <div className="flex flex-col lg:flex-row h-full"> {/* Changed min-h-[75vh] to h-full */}
+      <div className="flex flex-col lg:flex-row h-full">
         <aside className="hidden lg:block w-[12%] border-r border-ui-border-base p-2 pt-4 pl-10">
           <div className="h-full">
             {categories && categories.length > 0 ? (
@@ -69,8 +68,8 @@ const Hero = async ({ collections, countryCode }: HeroProps) => {
                     <a
                       href={`/category/${category.handle}`}
                       className={clx(
-                        "hover:bg-gray-100 hover:shadow-sm transition-all duration-200 rounded-md px-1 py-0.5",
-                        category.category_children?.length > 0 && "font-semibold"
+                        "hover:bg-gray-100 hover:shadow-sm transition-all duration-200 rounded-md px-1 py-0.5 font-semibold", // Changed to font-semibold
+                        category.category_children?.length > 0 && "font-semibold" // Kept for consistency, though redundant now
                       )}
                       data-testid="category-link"
                     >
@@ -83,7 +82,9 @@ const Hero = async ({ collections, countryCode }: HeroProps) => {
                             <li key={child.id}>
                               <a
                                 href={`/category/${child.handle}`}
-                                className="hover:bg-gray-100 hover:shadow-sm transition-all duration-200 rounded-large px-1 py-0.5"
+                                className={clx(
+                                  "hover:bg-gray-100 hover:shadow-sm transition-all duration-200 rounded-large px-1 py-0.5 font-semibold" // Changed to font-semibold
+                                )}
                                 data-testid="category-link"
                               >
                                 {child.name}

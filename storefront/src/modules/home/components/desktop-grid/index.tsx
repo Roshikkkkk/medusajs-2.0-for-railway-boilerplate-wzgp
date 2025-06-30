@@ -14,10 +14,10 @@ type DesktopGridProps = {
 };
 
 const DesktopGrid = ({ className, collections, countryCode, products = [], region }: DesktopGridProps) => {
-  const [visibleCount, setVisibleCount] = useState(6);
+  const [visibleCount, setVisibleCount] = useState(5);
   const [isLoading, setIsLoading] = useState(false);
   const loaderRef = useRef<HTMLDivElement>(null);
-  const maxProducts = Math.min(products.length, 18); // Ограничение до 18 или меньше
+  const maxProducts = Math.min(products.length, 100); // Ограничение до 5
 
   // Lazy loading с Intersection Observer
   useEffect(() => {
@@ -26,7 +26,7 @@ const DesktopGrid = ({ className, collections, countryCode, products = [], regio
         const [entry] = entries;
         if (entry.isIntersecting && !isLoading && visibleCount < maxProducts) {
           setIsLoading(true);
-          setVisibleCount((prev) => Math.min(prev + 6, maxProducts));
+          setVisibleCount((prev) => Math.min(prev + 5, maxProducts));
           setIsLoading(false);
         }
       },
@@ -53,9 +53,9 @@ const DesktopGrid = ({ className, collections, countryCode, products = [], regio
   }
 
   return (
-    <div className={clx("w-full pt-0 pb-4 bg-white border-t border-gray-200 mt-4 h-full p-0", className)}>
-      <div className="px-4 py-2"> {/* Changed py-4 to py-2 to reduce space below header */}
-        <h2 className="text-xl font-bold text-gray-800 mt-4 mb-2">Популярні товари</h2> {/* Changed text-2xl to text-xl */}
+    <div className={clx("w-full pt-0 pb-4 bg-white h-full p-0", className)}>
+      <div className="px-4 py-2">
+        <h2 className="text-xl font-bold text-gray-800 mt-4 mb-2">Популярні товари</h2>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 w-full border-t border-gray-200 h-full p-0">

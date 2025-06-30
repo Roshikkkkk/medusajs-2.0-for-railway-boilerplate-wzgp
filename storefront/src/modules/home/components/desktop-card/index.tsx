@@ -1,4 +1,3 @@
-
 "use client";
 
 import { clx } from "@medusajs/ui";
@@ -44,28 +43,20 @@ const DesktopCard = ({ index, product, region, countryCode }: DesktopCardProps) 
     <LocalizedClientLink href={`/products/${product.handle}?countryCode=${countryCode}`} className="block">
       <div
         className={clx(
-          "w-full h-[300px] bg-white flex flex-col transition-all duration-300 border-r border-gray-200"
+          "w-full h-[300px] bg-white flex flex-col transition-all duration-300 border-r border-gray-200 p-0"
         )}
       >
-        <div className="relative w-full h-[225px] bg-gray-100">
+        <div className="relative w-full h-[225px] bg-gray-100 flex items-center justify-center">
           <img
             src={thumbnailUrl}
             alt={productName}
-            className="absolute w-full h-full object-contain"
+            className="max-w-full max-h-full object-contain"
           />
           {isDiscounted && (
             <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-semibold rounded-full px-2 py-1">
               -{discountPercentage}%
             </div>
           )}
-          <div className="absolute top-2 right-2">
-            <img
-              src="/icons/eye.svg"
-              alt="eye"
-              className="w-5 h-5 fill-current"
-              style={{ filter: "invert(74%) sepia(8%) saturate(200%) hue-rotate(180deg) brightness(95%) contrast(90%)" }}
-            />
-          </div>
         </div>
         <div className="flex flex-col p-2 h-[75px] justify-between">
           <span
