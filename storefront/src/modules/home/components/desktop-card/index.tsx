@@ -47,11 +47,11 @@ const DesktopCard = ({ index, product, region, countryCode }: DesktopCardProps) 
           index % 2 === 0 && "border-r border-gray-200"
         )}
       >
-        <div className="relative w-full h-[225px]">
+        <div className="relative w-full h-[225px] bg-gray-100">
           <img
             src={thumbnailUrl}
             alt={productName}
-            className="absolute w-full h-full object-cover object-top"
+            className="absolute w-full h-full object-contain"
           />
           {isDiscounted && (
             <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-semibold rounded-full px-2 py-1">
