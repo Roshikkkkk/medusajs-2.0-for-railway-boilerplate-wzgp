@@ -1,3 +1,4 @@
+// Hero.jsx
 import { Suspense } from "react";
 import HeroSlider from "@modules/home/components/hero-slider";
 import MobileGrid from "@modules/home/components/mobile-grid";
@@ -11,7 +12,9 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 
 interface HeroProps {
   collections: HttpTypes.StoreCollection[] | null;
+  region: HttpTypes.StoreRegion | null;
   countryCode: string;
+  categories: any[];
 }
 
 interface ProductListQueryParams {
@@ -23,7 +26,7 @@ interface ComponentWithClassName {
   className?: string;
 }
 
-const Hero = async ({ collections: propCollections, countryCode }: HeroProps) => {
+const Hero = async ({ collections: propCollections, countryCode, categories }: HeroProps) => {
   let products: HttpTypes.StoreProduct[] = [];
   let region: HttpTypes.StoreRegion | null = null;
 
@@ -63,7 +66,10 @@ const Hero = async ({ collections: propCollections, countryCode }: HeroProps) =>
           <div className="flex-1"></div>
         </div>
         <div className="flex flex-col lg:flex-row h-full">
-          <CategoriesDesktop countryCode={countryCode} />
+          <CategoriesDesktop
+            countryCode={countryCode}
+            categories={categories}
+          />
           <div className="w-full lg:flex-1 flex flex-col h-full">
             <Suspense fallback={<div className="w-full h-full bg-gray-200" />}>
               <HeroSlider className="md:hidden" />
@@ -74,10 +80,7 @@ const Hero = async ({ collections: propCollections, countryCode }: HeroProps) =>
                 products={products}
                 region={region}
               />
-              <DesktopGrid
-                className="hidden md:block h-full"
-                countryCode={countryCode}
-              />
+              <DesktopGrid className="hidden md:block h-full" countryCode={countryCode} />
             </Suspense>
           </div>
         </div>
