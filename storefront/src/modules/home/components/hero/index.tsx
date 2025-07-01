@@ -1,9 +1,7 @@
-// Hero.jsx
 import { Suspense } from "react";
 import HeroSlider from "@modules/home/components/hero-slider";
 import MobileGrid from "@modules/home/components/mobile-grid";
-import DesktopGrid from "@modules/home/components/desktop-grid";
-import CategoriesDesktop from "@modules/home/components/categories-desktop";
+import DesktopHero from "@modules/home/components/desktop-hero";
 import { HttpTypes } from "@medusajs/types";
 import { getCollectionByHandle } from "@lib/data/collections";
 import { getProductsById, getProductsList } from "@lib/data/products";
@@ -12,7 +10,6 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 
 interface HeroProps {
   collections: HttpTypes.StoreCollection[] | null;
-  region: HttpTypes.StoreRegion | null;
   countryCode: string;
   categories: any[];
 }
@@ -20,10 +17,6 @@ interface HeroProps {
 interface ProductListQueryParams {
   collection_id?: string[];
   limit?: number;
-}
-
-interface ComponentWithClassName {
-  className?: string;
 }
 
 const Hero = async ({ collections: propCollections, countryCode, categories }: HeroProps) => {
@@ -51,13 +44,13 @@ const Hero = async ({ collections: propCollections, countryCode, categories }: H
   }
 
   return (
-    <div className="w-full border-b border-ui-border-base bg-ui-bg-subtle">
+    <div className="w-full border-b border-ui-border-base bg-[#FAFAFA]">
       <div className="flex flex-col h-full">
-        <div className="hidden lg:flex w-full h-[52px] bg-white border-b border-gray-200">
+        <div className="hidden lg:flex w-full h-[52px] bg-[#FAFAFA] border-b border-gray-200">
           <div className="w-[220px] h-[51px] bg-[#FAFAFA] border-r border-gray-200 flex items-center justify-center">
             <LocalizedClientLink
               href="/"
-              className="txt-compact-xlarge-plus hover:text-ui-fg-base uppercase text-center"
+              className="font-medium font-sans txt-compact-large truncate pl-6"
               data-testid="nav-store-link"
             >
               Torgash Store
@@ -66,9 +59,11 @@ const Hero = async ({ collections: propCollections, countryCode, categories }: H
           <div className="flex-1"></div>
         </div>
         <div className="flex flex-col lg:flex-row h-full">
-          <CategoriesDesktop
+          <DesktopHero
             countryCode={countryCode}
             categories={categories}
+            products={products}
+            region={region}
           />
           <div className="w-full lg:flex-1 flex flex-col h-full">
             <Suspense>
@@ -80,12 +75,7 @@ const Hero = async ({ collections: propCollections, countryCode, categories }: H
                 products={products}
                 region={region}
               />
-              <DesktopGrid
-                className="hidden md:block h-full"
-                countryCode={countryCode}
-                products={products}
-                region={region}
-              />
+              <div className="hidden md:block h-full"></div>
             </Suspense>
           </div>
         </div>
