@@ -1,4 +1,6 @@
-import { Suspense } from "react";
+"use client";
+
+import { Suspense, useState, useEffect } from "react";
 import HeroSlider from "@modules/home/components/hero-slider";
 import MobileGrid from "@modules/home/components/mobile-grid";
 import DesktopGrid from "@modules/home/components/desktop-grid";
@@ -18,53 +20,67 @@ interface ProductListQueryParams {
   limit?: number;
 }
 
-const Hero = async ({ collections: propCollections, countryCode }: HeroProps) => {
-  let products: HttpTypes.StoreProduct[] = [];
-  let region: HttpTypes.StoreRegion | null = null;
+const Hero = ({ collections: propCollections, countryCode }: HeroProps) => {
+  const [products, setProducts] = useState<HttpTypes.StoreProduct[]>([]);
+  const [region, setRegion] = useState<HttpTypes.StoreRegion | null>(null);
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>(undefined);
 
-  try {
-    const collection = await getCollectionByHandle("popular", { cache: "force-cache" });
-    if (collection?.id) {
-      const regionData = await getRegion(countryCode, { cache: "force-cache" });
-      if (regionData?.id) {
-        region = regionData;
-        const { response } = await getProductsList({
-          queryParams: { collection_id: [collection.id], limit: 100 } as ProductListQueryParams,
-          countryCode,
-          cache: "force-cache",
-        });
-        const productIds = response.products.map((p) => p.id!).filter(Boolean);
-        if (productIds.length > 0) {
-          products = (await getProductsById({ ids: productIds, regionId: regionData.id, cache: "force-cache" })) || [];
+  useEffect(() => {
+    const fetchInitialProducts = async () => {
+      try {
+        const collection = await getCollectionByHandle("popular", { cache: "force-cache" });
+        if (collection?.id) {
+          const regionData = await getRegion(countryCode, { cache: "force-cache" });
+          if (regionData?.id) {
+            setRegion(regionData);
+            const { response } = await getProductsList({
+              queryParams: { collection_id: [collection.id], limit: 100 } as ProductListQueryParams,
+              countryCode,
+              cache: "force-cache",
+            });
+            const productIds = response.products.map((p) => p.id!).filter(Boolean);
+            if (productIds.length > 0) {
+              const initialProducts = (await getProductsById({ ids: productIds, regionId: regionData.id, cache: "force-cache" })) || [];
+              setProducts(initialProducts);
+            }
+          }
         }
+      } catch (error) {
+        console.error("Failed to fetch initial products:", error);
       }
-    }
-  } catch (error) {
-    console.error("Failed to fetch products in Hero:", error);
-  }
+    };
+    fetchInitialProducts();
+  }, [countryCode]);
 
   return (
     <div className="w-full border-b border-ui-border-base bg-ui-bg-subtle">
-      <div className="flex flex-col lg:flex-row h-full">
-        <CategoriesDesktop countryCode={countryCode} />
-        <div className="w-full lg:w-[88%] flex flex-col h-full">
-          <Suspense fallback={<div className="w-full h-full bg-gray-200" />}>
-            <HeroSlider className="md:hidden" />
-            <MobileGrid
-              className="md:hidden"
-              collections={propCollections}
-              countryCode={countryCode}
-              products={products}
-              region={region}
-            />
-            <DesktopGrid
-              className="hidden md:block h-full"
-              collections={propCollections}
-              countryCode={countryCode}
-              products={products}
-              region={region}
-            />
-          </Suspense>
+      <div className="flex flex-col h-full">
+        <div className="hidden lg:flex w-full h-[52px] bg-white border-b border-gray-200">
+          <div className="w-[220px] border-r border-gray-200"></div>
+          <div className="flex-1"></div>
+        </div>
+        <div className="flex flex-col lg:flex-row h-full">
+          <CategoriesDesktop countryCode={countryCode} onCategorySelect={setSelectedCategoryId} />
+          <div className="w-full lg:flex-1 flex flex-col h-full">
+            <Suspense fallback={<div className="w-full h-full bg-gray-200" />}>
+              <HeroSlider className="md:hidden" />
+              <MobileGrid
+                className="md:hidden"
+                collections={propCollections}
+                countryCode={countryCode}
+                products={products}
+                region={region}
+              />
+              <DesktopGrid
+                className="hidden md:block h-full"
+                collections={propCollections}
+                countryCode={countryCode}
+                products={products}
+                region={region}
+                selectedCategoryId={selectedCategoryId}
+              />
+            </Suspense>
+          </div>
         </div>
       </div>
     </div>
