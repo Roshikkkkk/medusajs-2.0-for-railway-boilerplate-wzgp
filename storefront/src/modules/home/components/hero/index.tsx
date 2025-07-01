@@ -4,7 +4,7 @@ import MobileGrid from "@modules/home/components/mobile-grid";
 import DesktopHero from "@modules/home/components/desktop-hero";
 import { HttpTypes } from "@medusajs/types";
 import { getCollectionByHandle } from "@lib/data/collections";
-import { getProductsById, getProductsList } from "@lib/data/products";
+import { getProductsList } from "@lib/data/products";
 import { getRegion } from "@lib/data/regions";
 import LocalizedClientLink from "@modules/common/components/localized-client-link";
 
@@ -12,11 +12,6 @@ interface HeroProps {
   collections: HttpTypes.StoreCollection[] | null;
   countryCode: string;
   categories: any[];
-}
-
-interface ProductListQueryParams {
-  collection_id?: string[];
-  limit?: number;
 }
 
 const Hero = async ({ collections: propCollections, countryCode, categories }: HeroProps) => {
@@ -33,10 +28,7 @@ const Hero = async ({ collections: propCollections, countryCode, categories }: H
           queryParams: { collection_id: [collection.id], limit: 100 },
           countryCode,
         });
-        const productIds = response.products.map((p) => p.id!).filter(Boolean);
-        if (productIds.length > 0) {
-          products = (await getProductsById({ ids: productIds, regionId: regionData.id })) || [];
-        }
+        products = response.products || [];
       }
     }
   } catch (error) {
@@ -50,10 +42,11 @@ const Hero = async ({ collections: propCollections, countryCode, categories }: H
           <div className="w-[220px] h-[51px] bg-[#FAFAFA] border-r border-gray-200 flex items-center justify-center">
             <LocalizedClientLink
               href="/"
-              className="font-medium font-sans txt-compact-large truncate pl-6"
+              className="font-medium font-sans txt-compact-large w-[195px] h-[28px] rounded flex items-center pl-6 pr-2.5 text-sm text-gray-700 hover:bg-gray-100"
               data-testid="nav-store-link"
             >
-              Torgash Store
+              <img src="/icons/home.svg" alt="Home" className="w-4 h-4" />
+              <span className="ml-2">Torgash Store</span>
             </LocalizedClientLink>
           </div>
           <div className="flex-1"></div>

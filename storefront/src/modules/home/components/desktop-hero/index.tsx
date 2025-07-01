@@ -4,7 +4,7 @@ import { clx } from "@medusajs/ui";
 import DesktopCard from "../desktop-card";
 import { HttpTypes } from "@medusajs/types";
 import { useState, useEffect } from "react";
-import { getProductsList } from "@lib/data/products"; // Адаптируйте под ваш API
+import { getProductsList } from "@lib/data/products";
 
 interface DesktopHeroProps {
   countryCode: string;
@@ -15,29 +15,25 @@ interface DesktopHeroProps {
 
 const DesktopHero = ({ countryCode, categories, products: initialProducts, region }: DesktopHeroProps) => {
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
-  const [filteredProducts, setFilteredProducts] = useState<HttpTypes.StoreProduct[]>(initialProducts);
+  const [filteredProducts, setFilteredProducts] = useState<HttpTypes.StoreProduct[]>(initialProducts || []);
 
   useEffect(() => {
     const fetchCategoryProducts = async () => {
-      if (selectedCategoryId) {
+      if (selectedCategoryId && region?.id) {
         try {
+          console.log(`Fetching products for category ID: ${selectedCategoryId}`);
           const { response } = await getProductsList({
-            queryParams: { collection_id: [selectedCategoryId], limit: 100 },
+            queryParams: { category_id: [selectedCategoryId], limit: 100 },
             countryCode,
           });
-          const productIds = response.products.map((p) => p.id!).filter(Boolean);
-          if (productIds.length > 0) {
-            const products = await getProductsById({ ids: productIds, regionId: region?.id });
-            setFilteredProducts(products || []);
-          } else {
-            setFilteredProducts([]);
-          }
+          console.log("API Response:", response);
+          setFilteredProducts(response.products || []);
         } catch (error) {
           console.error("Error fetching category products:", error);
-          setFilteredProducts(initialProducts); // Возвращаем популярные при ошибке
+          setFilteredProducts([]);
         }
       } else {
-        setFilteredProducts(initialProducts); // По умолчанию популярные
+        setFilteredProducts(initialProducts || []);
       }
     };
     fetchCategoryProducts();
@@ -77,9 +73,9 @@ const DesktopHero = ({ countryCode, categories, products: initialProducts, regio
         <div className="bg-[#FAFAFA] p-2 border-b border-gray-200">
           <span className="text-sm font-medium text-gray-700">{selectedCategoryName}</span>
         </div>
-        <div className={clx("w-full bg-white h-full")}>
+        <div className={clx("w-full bg-white h-full")} style={{ minHeight: "960px" }}>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-0">
-            {filteredProducts.length > 0 ? (
+            {filteredProducts && filteredProducts.length > 0 ? (
               filteredProducts.map((product, index) => (
                 <div key={product.id} className="w-full">
                   <DesktopCard
