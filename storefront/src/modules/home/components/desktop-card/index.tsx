@@ -5,11 +5,6 @@ import { HttpTypes } from "@medusajs/types";
 import { getProductPrice } from "@lib/util/get-product-price";
 import LocalizedClientLink from "@modules/common/components/localized-client-link";
 
-interface GetProductPriceParams {
-  product: HttpTypes.StoreProduct;
-  region?: HttpTypes.StoreRegion | null | undefined;
-}
-
 type DesktopCardProps = {
   index: number;
   product: HttpTypes.StoreProduct;
@@ -21,35 +16,22 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "http://192.16
 const MINIO_URL = process.env.NEXT_PUBLIC_MINIO_ENDPOINT || BACKEND_URL;
 
 const DesktopCard = ({ index, product, region, countryCode }: DesktopCardProps) => {
-  const productName = product.title || "Без назви";
-  const { cheapestPrice } = getProductPrice({ product, region } as GetProductPriceParams);
-
-  // Format price to show ₴ instead of UAH
-  const formatPrice = (price: string | undefined) => {
-    if (!price) return "Ціна не вказана";
-    return price.replace("UAH", "₴");
-  };
-
+  const { cheapestPrice } = getProductPrice({ product, region });
+  const formatPrice = (price?: string) => price ? price.replace("UAH", "₴") : "Ціна не вказана";
   const price = formatPrice(cheapestPrice?.calculated_price);
   const originalPrice = formatPrice(cheapestPrice?.original_price || cheapestPrice?.calculated_price);
-  const thumbnailUrl = (product.images && product.images.length > 0 ? product.images[0].url : product.thumbnail)
-    ?.replace("http://localhost:9000/static", MINIO_URL)
-    || "/images/placeholder.jpg";
-
   const isDiscounted = cheapestPrice?.percentage_diff > 0;
   const discountPercentage = cheapestPrice?.percentage_diff || 0;
+  const thumbnailUrl = (product.images?.[0]?.url || product.thumbnail || "/images/placeholder.jpg")
+    .replace("http://localhost:9000/static", MINIO_URL);
 
   return (
-    <LocalizedClientLink href={`/products/${product.handle}?countryCode=${countryCode}`} className="block">
-      <div
-        className={clx(
-          "w-full h-[300px] bg-white flex flex-col transition-all duration-300 border-r border-gray-200 p-0"
-        )}
-      >
+    <LocalizedClientLink href={`/products/${product.handle}?countryCode=${countryCode}`}>
+      <div className="w-full h-[300px] bg-white flex flex-col border-r border-gray-200">
         <div className="relative w-full h-[225px] bg-gray-100 flex items-center justify-center">
           <img
             src={thumbnailUrl}
-            alt={productName}
+            alt={product.title || "Без назви"}
             className="max-w-full max-h-full object-contain"
           />
           {isDiscounted && (
@@ -60,18 +42,13 @@ const DesktopCard = ({ index, product, region, countryCode }: DesktopCardProps) 
         </div>
         <div className="flex flex-col p-2 h-[75px] justify-between">
           <span
-            className="text-sm font-medium text-gray-900 overflow-hidden"
-            style={{
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              textOverflow: "ellipsis",
-            }}
+            className="text-sm font-medium text-gray-900"
+            style={{ display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
           >
-            {productName}
+            {product.title || "Без назви"}
           </span>
           <div className="flex items-center justify-between">
-            {isDiscounted && (
+            {isDiscounted ? (
               <div className="flex items-center space-x-2">
                 <span className="text-[15px] text-red-600 font-medium bg-gray-200 bg-opacity-50 px-2 py-0.5 rounded">
                   {price}
@@ -80,18 +57,12 @@ const DesktopCard = ({ index, product, region, countryCode }: DesktopCardProps) 
                   {originalPrice}
                 </span>
               </div>
+            ) : (
+              <span className="text-[15px] text-gray-700 font-medium bg-gray-200 bg-opacity-50 px-2 py-0.5 rounded">
+                {price}
+              </span>
             )}
-            {!isDiscounted && (
-              <span className="text-[15px] text-gray-700 font-medium bg-gray-200 bg-opacity-50 px-2 py-0.5 rounded">{price}</span>
-            )}
-            <span>
-              <img
-                src="/icons/cart.svg"
-                alt="cart"
-                className="w-5 h-5 fill-current"
-                style={{ filter: "invert(48%) sepia(79%) saturate(2476%) hue-rotate(190deg) brightness(100%) contrast(97%)" }}
-              />
-            </span>
+            <img src="/icons/cart.svg" alt="cart" className="w-5 h-5" />
           </div>
         </div>
       </div>

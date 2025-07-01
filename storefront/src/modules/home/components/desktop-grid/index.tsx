@@ -1,6 +1,5 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
 import { clx } from "@medusajs/ui";
 import DesktopCard from "../desktop-card";
 import { HttpTypes } from "@medusajs/types";
@@ -14,53 +13,27 @@ type DesktopGridProps = {
 };
 
 const DesktopGrid = ({ className, collections, countryCode, products = [], region }: DesktopGridProps) => {
-  const [visibleCount, setVisibleCount] = useState(12); // Начальные 12 товаров
-  const [isLoading, setIsLoading] = useState(false);
-  const loaderRef = useRef<HTMLDivElement>(null);
-  const maxProducts = Math.min(products.length, 100); // Максимум 100 товаров
+  const visibleProducts = products.slice(0, 100);
 
-  // Lazy loading с Intersection Observer
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const [entry] = entries;
-        if (entry.isIntersecting && !isLoading && visibleCount < maxProducts) {
-          setIsLoading(true);
-          setVisibleCount((prev) => Math.min(prev + 5, maxProducts));
-          setIsLoading(false);
-        }
-      },
-      { rootMargin: "100px" }
-    );
-
-    if (loaderRef.current) {
-      observer.observe(loaderRef.current);
-    }
-
-    return () => {
-      if (loaderRef.current) {
-        observer.unobserve(loaderRef.current);
-      }
-    };
-  }, [isLoading, visibleCount, maxProducts]);
-
-  if (!products.length) {
+  if (!visibleProducts.length) {
     return (
-      <div className="text-center py-12">
-        <p className="text-gray-500 text-lg">No popular products available</p>
+      <div className="text-center py-8">
+        <p className="text-gray-500 text-base">Популярні товари відсутні</p>
       </div>
     );
   }
 
   return (
-    <div className={clx("w-full pt-0 pb-4 bg-white h-full p-0", className)}>
-      <div className="py-2 pl-4 pr-4">
-        <h2 className="text-base font-semibold text-gray-800 mt-2 mb-2" style={{ color: '#2b2926' }}>Популярні товари</h2>
+    <div className={clx("w-full bg-white h-full", className)}>
+      <div className="py-2 px-4">
+        <h2 className="text-base font-semibold" style={{ color: '#2b2926' }}>
+          Популярні товари
+        </h2>
       </div>
       <div className="border-t border-gray-200"></div>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 w-full h-full p-0">
-        {products.slice(0, visibleCount).map((product, index) => (
-          <div key={product.id} className={clx("animate-fadeIn", index < visibleCount - 1 && "border-b border-gray-200")}>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-0">
+        {visibleProducts.map((product, index) => (
+          <div key={product.id} className="w-full">
             <DesktopCard
               index={index}
               product={product}
@@ -70,36 +43,6 @@ const DesktopGrid = ({ className, collections, countryCode, products = [], regio
           </div>
         ))}
       </div>
-
-      {visibleCount < maxProducts && (
-        <div ref={loaderRef} className="mt-4 flex justify-center">
-          {isLoading && (
-            <div className="h-12 w-[150px] flex items-center justify-center">
-              <svg
-                className="w-5 h-5 animate-spin text-[#007AFF]"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
-                ></path>
-              </svg>
-              <span className="ml-2 text-sm text-[#007AFF]">Зачекайте...</span>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };
