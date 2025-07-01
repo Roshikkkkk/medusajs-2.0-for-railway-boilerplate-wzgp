@@ -37,7 +37,7 @@ const Hero = async ({ collections: propCollections, countryCode, categories }: H
       if (regionData?.id) {
         region = regionData;
         const { response } = await getProductsList({
-          queryParams: { collection_id: [collection.id], limit: 100 } as ProductListQueryParams,
+          queryParams: { collection_id: [collection.id], limit: 100 },
           countryCode,
         });
         const productIds = response.products.map((p) => p.id!).filter(Boolean);
@@ -71,7 +71,7 @@ const Hero = async ({ collections: propCollections, countryCode, categories }: H
             categories={categories}
           />
           <div className="w-full lg:flex-1 flex flex-col h-full">
-            <Suspense fallback={<div className="w-full h-full bg-gray-200" />}>
+            <Suspense>
               <HeroSlider className="md:hidden" />
               <MobileGrid
                 className="md:hidden"
@@ -80,7 +80,12 @@ const Hero = async ({ collections: propCollections, countryCode, categories }: H
                 products={products}
                 region={region}
               />
-              <DesktopGrid className="hidden md:block h-full" countryCode={countryCode} />
+              <DesktopGrid
+                className="hidden md:block h-full"
+                countryCode={countryCode}
+                products={products}
+                region={region}
+              />
             </Suspense>
           </div>
         </div>
