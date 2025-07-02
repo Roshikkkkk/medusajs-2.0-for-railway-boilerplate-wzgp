@@ -5,6 +5,7 @@ import DesktopCard from "../desktop-card";
 import { HttpTypes } from "@medusajs/types";
 import { useState, useEffect } from "react";
 import { getProductsList } from "@lib/data/products";
+import { useSearchParams, useRouter } from "next/navigation";
 
 interface DesktopHeroProps {
   countryCode: string;
@@ -14,8 +15,20 @@ interface DesktopHeroProps {
 }
 
 const DesktopHero = ({ countryCode, categories, products: initialProducts, region }: DesktopHeroProps) => {
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
   const [filteredProducts, setFilteredProducts] = useState<HttpTypes.StoreProduct[]>(initialProducts || []);
+
+  // Reset selectedCategoryId when reset=true is in URL
+  useEffect(() => {
+    const reset = searchParams.get("reset");
+    if (reset === "true") {
+      setSelectedCategoryId(null);
+      // Clean URL by removing reset parameter
+      router.replace("/", { scroll: false });
+    }
+  }, [searchParams, router]);
 
   useEffect(() => {
     const fetchCategoryProducts = async () => {

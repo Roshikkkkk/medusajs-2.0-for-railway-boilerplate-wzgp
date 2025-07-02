@@ -36,7 +36,7 @@ const DesktopCard = ({ index, product, region, countryCode }: DesktopCardProps) 
           />
           {isDiscounted && (
             <div className="absolute top-2 left-2 bg-red-600 text-white text-xs font-semibold rounded-full px-2 py-1">
-              -{discountPercentage}%
+              Знижка -{discountPercentage}%
             </div>
           )}
         </div>

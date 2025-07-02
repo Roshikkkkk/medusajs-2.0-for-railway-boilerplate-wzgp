@@ -41,7 +41,7 @@ const Hero = async ({ collections: propCollections, countryCode, categories }: H
         <div className="hidden lg:flex w-full h-[52px] bg-[#FAFAFA] border-b border-gray-200">
           <div className="w-[220px] h-[51px] bg-[#FAFAFA] border-r border-gray-200 flex items-center justify-center">
             <LocalizedClientLink
-              href="/"
+              href="/?reset=true"
               className="font-medium font-sans txt-compact-large w-[195px] h-[28px] rounded flex items-center pl-6 pr-2.5 text-sm text-gray-700 hover:bg-gray-100"
               data-testid="nav-store-link"
             >
